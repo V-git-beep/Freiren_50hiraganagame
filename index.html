@@ -624,21 +624,37 @@ document.addEventListener('keydown',e=>{
 // ============================================================
 // 判定成功 / 失敗
 // ============================================================
+// 角色狀態管理：防止快速連擊時圖片互相覆蓋
+let charTimer = null;
+let charLocked = false; // true = 正在播放動畫，不可覆蓋
+
+function setCharTemp(state, duration, callback) {
+  // 播放臨時狀態圖片，duration ms 後還原
+  if (charLocked) return; // 若正在播放中，忽略新請求
+  charLocked = true;
+  clearTimeout(charTimer);
+  const img = document.getElementById('char-img');
+  const map = {stand:'frierenstand',attack:'frierenattack',attacked:'frierenattacked',clear:'frierenclear',failed:'frierenfailed'};
+  img.src = 'images/' + (map[state] || 'frierenstand') + '.png';
+  charTimer = setTimeout(() => {
+    charLocked = false;
+    if (callback) callback();
+    else if (G.running) img.src = 'images/frierenstand.png';
+  }, duration);
+}
+
 function triggerSuccess(t) {
   const cx=t.x+TS/2, cy=t.y+TS/2;
-
-  // 立刻切換攻擊圖並顯示光束
-  document.getElementById('char-img').src='images/frierenattack.png';
   showBeam(cx,cy);
   showJudge('OK！',cx,cy-30,'ok');
   t.el.classList.add('success');
 
-  // 600ms 後：圖案移除、光束消失、切回待機
-  setTimeout(()=>{
-    rmTile(t);
+  // 播放攻擊圖 600ms，期間不可被其他狀態覆蓋
+  setCharTemp('attack', 600, () => {
     document.getElementById('attack-beam').style.display='none';
-    if(G.running) document.getElementById('char-img').src='images/frierenstand.png';
-  }, 600);
+  });
+
+  setTimeout(()=>rmTile(t), 400);
 }
 
 function triggerMiss(t) {
@@ -647,10 +663,13 @@ function triggerMiss(t) {
   setTimeout(()=>rmTile(t),500);
   G.hearts=Math.max(0,G.hearts-1);
   renderHearts();
-  setChar('attacked');
+
+  // 播放受擊圖 1000ms，同時觸發閃爍動畫
+  setCharTemp('attacked', 1000);
   const char=document.getElementById('character');
   char.classList.remove('hit'); void char.offsetWidth; char.classList.add('hit');
-  setTimeout(()=>{ char.classList.remove('hit'); if(G.running&&G.hearts>0) setChar('stand'); },1000);
+  setTimeout(()=>{ char.classList.remove('hit'); },1000);
+
   showJudge('MISS',t.x+TS/2,t.y+TS/2,'miss');
   if(G.hearts<=0) setTimeout(triggerGameOver,600);
 }
@@ -675,22 +694,23 @@ function triggerClear() {
   G.running=false;
   clearInterval(G.gameTimer);
   clearTimeout(G.spawnTimer);
-  // 角色圖與結果字樣同時出現
+  clearTimeout(charTimer);
+  charLocked = false;
   setChar('clear');
   document.getElementById('character').classList.add('clear');
   document.getElementById('clear-wrap').classList.add('show');
-  // 停止新圖案生成，但不立刻清除現有圖案（讓玩家看到最後狀態）
-  G.tiles.forEach(t=>{ t.judged=true; }); // 防止再觸發MISS
+  G.tiles.forEach(t=>{ t.judged=true; });
 }
 function triggerGameOver() {
   if(!G.running) return;
   G.running=false;
   clearInterval(G.gameTimer);
   clearTimeout(G.spawnTimer);
-  // 角色圖與結果字樣同時出現
+  clearTimeout(charTimer);
+  charLocked = false;
   setChar('failed');
   document.getElementById('over-wrap').classList.add('show');
-  G.tiles.forEach(t=>{ t.judged=true; }); // 防止繼續扣血
+  G.tiles.forEach(t=>{ t.judged=true; });
 }
 
 // ============================================================
