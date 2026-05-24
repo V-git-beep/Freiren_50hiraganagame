@@ -736,7 +736,7 @@ document.addEventListener('keydown',e=>{
 const CHAR_IMGS = {};
 ['frierenstand','frierenattack','frierenattacked','frierenclear','frierenfailed'].forEach(name => {
   const img = new Image();
-  img.src = 'images/' + name + '.png';
+  img.src = 'images/' + name + '.webp';
   CHAR_IMGS[name] = img;
 });
 
@@ -795,7 +795,7 @@ let charTimer = null;
 
 function showChar(state) {
   const map = {stand:'frierenstand',attack:'frierenattack',attacked:'frierenattacked',clear:'frierenclear',failed:'frierenfailed'};
-  const src = 'images/' + (map[state]||'frierenstand') + '.png';
+  const src = 'images/' + (map[state]||'frierenstand') + '.webp';
   document.getElementById('char-img').src = src;
 }
 
