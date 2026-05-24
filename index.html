@@ -152,17 +152,14 @@ body { background:#000; overflow:hidden; width:100vw; height:100vh; font-family:
 #input-display {
   display:flex; flex-direction:column; align-items:center; width:100%; margin-bottom:6px; gap:3px;
 }
-#current-target {
-  font-family:'Noto Serif JP',serif; font-weight:900; color:#fde68a;
-  text-shadow:0 0 10px #fbbf24; letter-spacing:2px; text-align:center;
-}
+#current-target { display:none; }
 #input-buffer {
   font-family:monospace; font-weight:700; color:#a78bfa; letter-spacing:3px;
   text-align:center; min-height:1.2em;
   background:rgba(109,40,217,0.2); border:1px solid rgba(139,92,246,0.4);
   border-radius:6px; padding:2px 10px; width:90%;
 }
-#input-hint { font-size:11px; color:rgba(255,255,255,0.4); letter-spacing:1px; text-align:center; }
+#input-hint { display:none; }
 
 /* 鍵盤 */
 #keyboard { display:flex; flex-direction:column; align-items:center; gap:4px; width:100%; }
@@ -340,7 +337,7 @@ function resize() {
 
   // 標題畫面
   const ts = document.getElementById('title-screen');
-  ts.style.cssText = `position:absolute;inset:0;z-index:10;background-size:cover;background-position:center;`;
+  ts.style.cssText = `position:absolute;inset:0;z-index:10;background-size:cover;background-position:center;width:${ww}px;height:${wh}px;`;
   if (ts.classList.contains('active')) ts.style.display = 'flex';
 
   document.getElementById('title-txt').style.fontSize = Math.round(36*hScale) + 'px';
@@ -585,14 +582,8 @@ function getTarget() {
 }
 
 function updateTargetDisplay() {
-  const target = getTarget();
-  const el = document.getElementById('current-target');
-  if (target) {
-    const romaji = ROMAJI[target.kana] || '?';
-    el.textContent = target.kana + '　→　' + romaji;
-  } else {
-    el.textContent = '　';
-  }
+  // 不顯示提示，讓玩家自己判斷
+  document.getElementById('current-target').textContent = '';
 }
 
 function updateTargetHighlight() {
@@ -624,33 +615,40 @@ function handleKey(ch) {
 
 function tryMatch() {
   const target = getTarget();
-  if (!target) { state.inputBuffer=''; document.getElementById('input-buffer').textContent=''; return; }
+  if (!target) {
+    clearBuffer();
+    return;
+  }
 
   const buf = state.inputBuffer;
   const correct = ROMAJI[target.kana];
   const alts    = ROMAJI_ALT[target.kana] || [correct];
-  const accepted = alts.includes(correct) ? alts : [correct, ...alts];
+  const accepted = [...new Set([correct, ...alts])];
 
-  // 完全匹配 → 判定成功
+  // 完全匹配 → 判定成功，自動清除
   if (accepted.some(r => buf === r)) {
-    state.inputBuffer = '';
-    document.getElementById('input-buffer').textContent = '';
+    clearBuffer();
     target.judged = true;
     triggerSuccess(target);
     return;
   }
 
-  // 部分匹配 → 繼續等待輸入
-  const partial = accepted.some(r => r.startsWith(buf));
-  if (partial) return;
+  // 部分匹配（輸入中）→ 繼續等待
+  if (accepted.some(r => r.startsWith(buf))) return;
 
-  // 完全不匹配 → 清除 buffer，重新從這個字母開始
-  // （給玩家機會，不直接懲罰）
-  state.inputBuffer = ch;
+  // 不匹配 → 清除後重新從最後一個字母開始嘗試
+  const lastChar = buf.slice(-1);
+  if (accepted.some(r => r.startsWith(lastChar))) {
+    state.inputBuffer = lastChar;
+  } else {
+    state.inputBuffer = '';
+  }
   document.getElementById('input-buffer').textContent = state.inputBuffer;
-  // 再試一次（可能新字母就是正確開頭）
-  const retry = accepted.some(r => r.startsWith(ch));
-  if (!retry) { state.inputBuffer=''; document.getElementById('input-buffer').textContent=''; }
+}
+
+function clearBuffer() {
+  state.inputBuffer = '';
+  document.getElementById('input-buffer').textContent = '';
 }
 
 // 實體鍵盤也支援（電腦端）
