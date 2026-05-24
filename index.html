@@ -443,6 +443,7 @@ function flashKey(btn) {
 // ============================================================
 // 預載所有資源
 // ============================================================
+// 載入畫面只等圖片和短音效，BGM 在背景自己下載不阻擋
 const ALL_ASSETS = [
   'images/gamebeginingbackground.png',
   'images/gamebeginbackground.png',
@@ -453,11 +454,11 @@ const ALL_ASSETS = [
   'images/frierenfailed.png',
   'images/attackeffect.png',
   'images/50onframe.png',
-  'audio/gameentirebgm.mp3',
   'audio/attack.mp3',
   'audio/attacked.mp3',
   'audio/clear.mp3',
   'audio/fail.mp3',
+  // BGM 不在這裡，它在背景自己預載
 ];
 
 function preloadAll(onComplete) {
@@ -480,15 +481,19 @@ function preloadAll(onComplete) {
   ALL_ASSETS.forEach(src => {
     if (src.endsWith('.mp3')) {
       const a = new Audio();
-      // BGM 很大，用 canplay（可以開始播就算），其他音效用 canplaythrough
-      const evt = src.includes('gameentirebgm') ? 'canplay' : 'canplaythrough';
-      a.addEventListener(evt, onLoad, { once: true });
-      a.addEventListener('error', onLoad, { once: true });
+      let done = false;
+      const finish = () => { if (!done) { done = true; onLoad(); } };
+      a.addEventListener('canplay', finish, { once: true });
+      a.addEventListener('error',   finish, { once: true });
+      setTimeout(finish, 3000); // 3秒內沒反應就跳過
       a.src = src;
     } else {
       const img = new Image();
-      img.onload  = onLoad;
-      img.onerror = onLoad; // 失敗也繼續
+      let done = false;
+      const finish = () => { if (!done) { done = true; onLoad(); } };
+      img.onload  = finish;
+      img.onerror = finish;
+      setTimeout(finish, 5000); // 圖片5秒沒載完就跳過
       img.src = src;
     }
   });
