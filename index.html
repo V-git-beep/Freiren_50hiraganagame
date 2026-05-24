@@ -274,13 +274,13 @@ const DIFFICULTY = {
     label: '初級 I',
     kana: ['あ','い','う','え','お','か','き','く','け','こ','さ','し','す','せ','そ','た','ち','つ','て','と'],
     totalTiles: 40,
-    speed: 60,        // px/秒（放慢，讓玩家有更多反應時間）
-    interval: 3200,   // ms 圖案生成間隔
-    // missPixels：圖案中心超過判定線左方這個距離才算MISS
-    // 設大一點，補償語音辨識1~2秒延遲
-    missPixels: 250,
-    // judgePixels：語音比對時，圖案中心距判定線的最大接受距離
-    judgePixels: 400,
+    speed: 60,
+    interval: 3200,
+    // missPixels：圖案中心超過判定線「左方」這個距離才算MISS
+    // 60px/秒 × 1.5秒延遲 = 90px，設120px留點餘裕
+    missPixels: 120,
+    // judgePixels：語音比對時接受的範圍（判定線左右）
+    judgePixels: 350,
   },
   beginner2: {
     label: '初級 II',
@@ -288,8 +288,8 @@ const DIFFICULTY = {
     totalTiles: 40,
     speed: 65,
     interval: 3200,
-    missPixels: 250,
-    judgePixels: 400,
+    missPixels: 120,
+    judgePixels: 350,
   },
   advanced: {
     label: '進階',
@@ -297,8 +297,8 @@ const DIFFICULTY = {
     totalTiles: 40,
     speed: 80,
     interval: 2800,
-    missPixels: 200,
-    judgePixels: 350,
+    missPixels: 100,
+    judgePixels: 300,
   }
 };
 
@@ -481,18 +481,20 @@ function beginGameplay() {
     updateTimer();
     if (state.timeLeft <= 0) triggerClear();
   }, 1000);
-  scheduleSpawn();
+  scheduleSpawn(true);
 }
 
 // ============================================================
 // 五十音生成
 // ============================================================
-function scheduleSpawn() {
+function scheduleSpawn(firstCall) {
   if (!state.gameRunning || state.spawnIndex >= state.spawnQueue.length) return;
   spawnTile();
   const diff   = DIFFICULTY[state.difficulty];
   const jitter = (Math.random() * 600) - 300;
-  state.spawnTimer = setTimeout(scheduleSpawn, diff.interval + jitter);
+  // 第一個圖案立刻生成，之後才按 interval 間隔
+  const delay = firstCall ? 0 : diff.interval + jitter;
+  state.spawnTimer = setTimeout(() => scheduleSpawn(false), delay);
 }
 
 function spawnTile() {
@@ -529,8 +531,9 @@ function gameLoop(ts) {
   lastTime = ts;
 
   if (state.gameRunning && state.difficulty) {
-    const speed      = DIFFICULTY[state.difficulty].speed;
-    const judgePixels = DIFFICULTY[state.difficulty].judgePixels;
+    const diff       = DIFFICULTY[state.difficulty];
+    const speed      = diff.speed;
+    const missPixels = diff.missPixels;
     const toRemove   = [];
 
     for (const tile of state.tiles) {
@@ -539,10 +542,9 @@ function gameLoop(ts) {
       tile.x -= speed * dt;
       tile.el.style.left = tile.x + 'px';
 
-      const cx = tile.x + TILE_SIZE / 2; // 圖案中心 X
+      const cx = tile.x + TILE_SIZE / 2;
 
       // 判定失敗：圖案中心飛過判定線左方 missPixels 像素後 → MISS
-      const missPixels = DIFFICULTY[state.difficulty].missPixels;
       if (!tile.judged && !tile.missTriggered && cx < JUDGE_X - missPixels) {
         tile.missTriggered = true;
         triggerMiss(tile);
