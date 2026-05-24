@@ -597,8 +597,14 @@ function initSpeech() {
   };
 
   rec.onerror = (e) => {
-    if (e.error === 'no-speech' || e.error === 'aborted') return;
-    setTimeout(() => { if (state.gameRunning) restartSpeech(); }, 500);
+    // no-speech 和 aborted 都要重啟，不能忽略
+    // Android Chrome 常常因 no-speech 靜默停止
+    if (e.error === 'aborted') return;
+    // 顯示錯誤方便診斷（no-speech 不顯示，太頻繁）
+    if (e.error !== 'no-speech') {
+      setVoiceStatus('', '⚠️ ' + e.error + ' → 再起動中...');
+    }
+    setTimeout(() => { if (state.gameRunning) restartSpeech(); }, 300);
   };
   rec.onend = () => { if (state.gameRunning) setTimeout(restartSpeech, 100); };
   rec.start();
@@ -606,7 +612,11 @@ function initSpeech() {
 
 function restartSpeech() {
   if (!state.gameRunning || !state.recognition) return;
-  try { state.recognition.start(); } catch(e) {}
+  try {
+    state.recognition.start();
+  } catch(e) {
+    // InvalidStateError = 已在運作中，忽略即可
+  }
 }
 
 function handleVoiceInput(transcripts) {
