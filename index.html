@@ -65,7 +65,7 @@ body { background:#000; overflow:hidden; width:100vw; height:100vh; font-family:
 
 /* 角色 */
 #character { position:absolute; z-index:30; pointer-events:none; }
-#character img { display:block; mix-blend-mode:screen; }
+#character img { display:block; filter:drop-shadow(0 4px 8px rgba(0,0,0,0.5)); }
 #character.hit   { animation:hitFlash 1s ease; }
 #character.clear { animation:clearBounce 2s ease; }
 @keyframes hitFlash   { 0%,100%{opacity:1} 25%,75%{opacity:0.2;filter:drop-shadow(0 0 14px red)} }
@@ -445,8 +445,8 @@ function flashKey(btn) {
 // ============================================================
 // 載入畫面只等圖片和短音效，BGM 在背景自己下載不阻擋
 const ALL_ASSETS = [
-  'images/gamebeginingbackground.webp',
-  'images/gamebeginbackground.webp',
+  'images/gamebeginingbackground.png',
+  'images/gamebeginbackground.png',
   'images/frierenstand.png',
   'images/frierenattack.png',
   'images/frierenattacked.png',
@@ -503,8 +503,8 @@ function preloadAll(onComplete) {
 // 初始化
 // ============================================================
 function init() {
-  document.getElementById('title-screen').style.backgroundImage = "url('images/gamebeginingbackground.webp')";
-  document.getElementById('game-left').style.backgroundImage    = "url('images/gamebeginbackground.webp')";
+  document.getElementById('title-screen').style.backgroundImage = "url('images/gamebeginingbackground.png')";
+  document.getElementById('game-left').style.backgroundImage    = "url('images/gamebeginbackground.png')";
 
   // 按鈕
   const g=document.getElementById('btn-group'); g.innerHTML='';
@@ -736,7 +736,7 @@ document.addEventListener('keydown',e=>{
 const CHAR_IMGS = {};
 ['frierenstand','frierenattack','frierenattacked','frierenclear','frierenfailed'].forEach(name => {
   const img = new Image();
-  img.src = 'images/' + name + '.webp';
+  img.src = 'images/' + name + '.png';
   CHAR_IMGS[name] = img;
 });
 
@@ -795,7 +795,7 @@ let charTimer = null;
 
 function showChar(state) {
   const map = {stand:'frierenstand',attack:'frierenattack',attacked:'frierenattacked',clear:'frierenclear',failed:'frierenfailed'};
-  const src = 'images/' + (map[state]||'frierenstand') + '.webp';
+  const src = 'images/' + (map[state]||'frierenstand') + '.png';
   document.getElementById('char-img').src = src;
 }
 
