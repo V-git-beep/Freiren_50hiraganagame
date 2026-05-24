@@ -194,11 +194,7 @@ body { background:#000; overflow:hidden; width:100vw; height:100vh; font-family:
       <div id="game-left">
         <div id="judge-line"></div>
         <div id="character">
-        <img id="char-stand"    src="images/frierenstand.png"    alt="" style="display:block;">
-        <img id="char-attack"   src="images/frierenattack.png"   alt="" style="display:none;position:absolute;top:0;left:0;">
-        <img id="char-attacked" src="images/frierenattacked.png" alt="" style="display:none;position:absolute;top:0;left:0;">
-        <img id="char-clear"    src="images/frierenclear.png"    alt="" style="display:none;position:absolute;top:0;left:0;">
-        <img id="char-failed"   src="images/frierenfailed.png"   alt="" style="display:none;position:absolute;top:0;left:0;">
+        <img id="char-img" src="images/frierenstand.png" alt="">
       </div>
         <div id="attack-beam"><img src="images/attackeffect.png" alt=""></div>
         <div id="hud">
@@ -327,14 +323,11 @@ function resize() {
   const char = document.getElementById('character');
   char.style.left   = CHAR_X+'px';
   char.style.bottom = CHAR_BOT+'px';
-  CHAR_IDS.forEach(s => {
-    const ci = document.getElementById('char-'+s);
-    if (!ci) return;
-    ci.style.width  = CHAR_W+'px';
-    ci.style.height = CHAR_H+'px';
-    ci.style.objectFit = 'contain';
-    ci.style.objectPosition = 'bottom center';
-  });
+  const ci = document.getElementById('char-img');
+  ci.style.width  = CHAR_W+'px';
+  ci.style.height = CHAR_H+'px';
+  ci.style.objectFit = 'contain';
+  ci.style.objectPosition = 'bottom center';
 
   // HUD 字型
   const s = VH/600;
@@ -634,16 +627,20 @@ document.addEventListener('keydown',e=>{
 // ============================================================
 // 判定成功 / 失敗
 // ============================================================
-// 角色圖片切換：用 display 控制，不靠 src 切換
+// 圖片預載（頁面載入時就把所有角色圖抓進快取）
+const CHAR_IMGS = {};
+['frierenstand','frierenattack','frierenattacked','frierenclear','frierenfailed'].forEach(name => {
+  const img = new Image();
+  img.src = 'images/' + name + '.png';
+  CHAR_IMGS[name] = img;
+});
+
 let charTimer = null;
-const CHAR_IDS = ['stand','attack','attacked','clear','failed'];
 
 function showChar(state) {
-  // 全部隱藏，只顯示指定的那張
-  CHAR_IDS.forEach(s => {
-    const el = document.getElementById('char-'+s);
-    if (el) el.style.display = (s === state) ? 'block' : 'none';
-  });
+  const map = {stand:'frierenstand',attack:'frierenattack',attacked:'frierenattacked',clear:'frierenclear',failed:'frierenfailed'};
+  const src = 'images/' + (map[state]||'frierenstand') + '.png';
+  document.getElementById('char-img').src = src;
 }
 
 function setCharFor(state, ms) {
@@ -699,6 +696,7 @@ function showBeam(tx,ty) {
 }
 
 function setChar(s) {
+  clearTimeout(charTimer);
   showChar(s);
 }
 
@@ -712,7 +710,7 @@ function triggerClear() {
   clearTimeout(G.spawnTimer);
   clearTimeout(charTimer);
   setChar('clear');
-  document.getElementById('char-clear').classList.add('bounce');
+  document.getElementById('character').classList.add('clear');
   document.getElementById('clear-wrap').classList.add('show');
   G.tiles.forEach(t=>{ t.judged=true; });
 }
