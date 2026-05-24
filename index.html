@@ -480,8 +480,10 @@ function preloadAll(onComplete) {
   ALL_ASSETS.forEach(src => {
     if (src.endsWith('.mp3')) {
       const a = new Audio();
-      a.addEventListener('canplaythrough', onLoad, { once: true });
-      a.addEventListener('error', onLoad, { once: true }); // 失敗也繼續
+      // BGM 很大，用 canplay（可以開始播就算），其他音效用 canplaythrough
+      const evt = src.includes('gameentirebgm') ? 'canplay' : 'canplaythrough';
+      a.addEventListener(evt, onLoad, { once: true });
+      a.addEventListener('error', onLoad, { once: true });
       a.src = src;
     } else {
       const img = new Image();
@@ -763,6 +765,7 @@ Object.entries(SFX_FILES).forEach(([key, src]) => {
 const BGM = new Audio('audio/gameentirebgm.mp3');
 BGM.loop = true;
 BGM.volume = 0.45;
+BGM.preload = 'auto';
 
 function playBGM() {
   BGM.currentTime = 0;
