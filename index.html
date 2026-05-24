@@ -164,9 +164,48 @@ body { background:#000; overflow:hidden; width:100vw; height:100vh; font-family:
 }
 .key:active, .key.flash { background:rgba(139,92,246,0.85); transform:scale(0.88); }
 .key-del { background:rgba(55,65,81,0.6); border-color:rgba(107,114,128,0.5); }
+
+/* ===== 載入畫面 ===== */
+#loading-screen {
+  position:fixed; inset:0; z-index:99999;
+  background:#0a0a1a;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  gap:20px;
+}
+#loading-screen .load-title {
+  font-family:'Noto Serif JP',serif; font-weight:900;
+  font-size:28px; color:#c4b5fd;
+  text-shadow:0 0 20px #7c3aed;
+  letter-spacing:4px;
+}
+#loading-bar-wrap {
+  width:280px; height:14px;
+  background:rgba(255,255,255,0.1);
+  border-radius:10px; overflow:hidden;
+  border:1px solid rgba(139,92,246,0.4);
+}
+#loading-bar {
+  height:100%; width:0%;
+  background:linear-gradient(90deg,#7c3aed,#a78bfa);
+  border-radius:10px;
+  transition:width 0.3s ease;
+  box-shadow:0 0 10px rgba(167,139,250,0.6);
+}
+#loading-text {
+  font-size:13px; color:rgba(255,255,255,0.5);
+  letter-spacing:2px;
+}
 </style>
 </head>
 <body>
+
+<!-- 載入畫面 -->
+<div id="loading-screen">
+  <div class="load-title">魔法の高み</div>
+  <div id="loading-bar-wrap"><div id="loading-bar"></div></div>
+  <div id="loading-text">読み込み中... 0%</div>
+</div>
 
 <div id="rotate-notice">
   <div class="icon">📱</div>
@@ -402,6 +441,58 @@ function flashKey(btn) {
 }
 
 // ============================================================
+// 預載所有資源
+// ============================================================
+const ALL_ASSETS = [
+  'images/gamebeginingbackground.png',
+  'images/gamebeginbackground.png',
+  'images/frierenstand.png',
+  'images/frierenattack.png',
+  'images/frierenattacked.png',
+  'images/frierenclear.png',
+  'images/frierenfailed.png',
+  'images/attackeffect.png',
+  'images/50onframe.png',
+  'audio/gameentirebgm.mp3',
+  'audio/attack.mp3',
+  'audio/attacked.mp3',
+  'audio/clear.mp3',
+  'audio/fail.mp3',
+];
+
+function preloadAll(onComplete) {
+  let loaded = 0;
+  const total = ALL_ASSETS.length;
+  const bar  = document.getElementById('loading-bar');
+  const txt  = document.getElementById('loading-text');
+
+  function onLoad() {
+    loaded++;
+    const pct = Math.round(loaded / total * 100);
+    bar.style.width = pct + '%';
+    txt.textContent = '読み込み中... ' + pct + '%';
+    if (loaded >= total) {
+      txt.textContent = '完了！';
+      setTimeout(onComplete, 400);
+    }
+  }
+
+  ALL_ASSETS.forEach(src => {
+    if (src.endsWith('.mp3')) {
+      const a = new Audio();
+      a.addEventListener('canplaythrough', onLoad, { once: true });
+      a.addEventListener('error', onLoad, { once: true }); // 失敗也繼續
+      a.src = src;
+    } else {
+      const img = new Image();
+      img.onload  = onLoad;
+      img.onerror = onLoad; // 失敗也繼續
+      img.src = src;
+    }
+  });
+}
+
+// ============================================================
 // 初始化
 // ============================================================
 function init() {
@@ -423,6 +514,11 @@ function init() {
   document.getElementById('over-back-btn').onclick  = goTitle;
 
   resize();
+
+  // 預載完成後隱藏載入畫面
+  preloadAll(() => {
+    document.getElementById('loading-screen').style.display = 'none';
+  });
 }
 
 // ============================================================
