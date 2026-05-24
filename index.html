@@ -6,11 +6,10 @@
 <title>芙莉蓮の五十音バトル</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700;900&display=swap');
-
 * { margin:0; padding:0; box-sizing:border-box; }
-body { background:#000; overflow:hidden; width:100vw; height:100vh; font-family:'Noto Serif JP',serif; }
+body { background:#000; overflow:hidden; width:100vw; height:100vh; font-family:'Noto Serif JP',serif; touch-action:manipulation; }
 
-/* ===== 橫向提示 ===== */
+/* 橫向提示 */
 #rotate-notice {
   display:none; position:fixed; inset:0; background:#0a0a1a; z-index:9999;
   flex-direction:column; align-items:center; justify-content:center; color:#fff; gap:20px;
@@ -18,46 +17,44 @@ body { background:#000; overflow:hidden; width:100vw; height:100vh; font-family:
 #rotate-notice .icon { font-size:60px; animation:rotHint 2s ease-in-out infinite; }
 @keyframes rotHint { 0%,100%{transform:rotate(0deg)} 50%{transform:rotate(90deg)} }
 
-/* ===== 外層容器 ===== */
-#game-wrapper {
-  position:fixed; top:0; left:0; width:100%; height:100%;
-  display:flex; align-items:center; justify-content:center; background:#111;
-}
-#game-canvas {
-  position:relative; overflow:hidden;
-  display:flex; flex-direction:row;
-}
+/* 外層 */
+#game-wrapper { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:#000; }
+#game-canvas  { position:relative; display:flex; flex-direction:row; overflow:hidden; }
 
-/* ===== 標題畫面（全寬）===== */
+/* ==================== 畫面切換 ==================== */
+.screen { position:absolute; inset:0; display:none; z-index:5; }
+.screen.active { display:block; }
+
+/* ==================== 標題畫面 ==================== */
 #title-screen {
-  position:absolute; inset:0; display:none;
-  background-size:cover; background-position:center; z-index:10;
+  background-size:cover; background-position:center;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
 }
-#title-screen.active { display:flex; flex-direction:column; align-items:center; justify-content:center; }
-#title-screen .overlay { position:absolute; inset:0; background:linear-gradient(to bottom,rgba(0,0,0,0.3),rgba(0,0,0,0.65)); }
-#title-screen .content { position:relative; z-index:2; display:flex; flex-direction:column; align-items:center; gap:0; }
-.game-title-jp { font-weight:900; color:#fff; text-shadow:0 0 20px #c4b5fd,0 0 40px #7c3aed,2px 2px 0 #000; margin-bottom:6px; }
-.subtitle-txt { color:#e9d5ff; letter-spacing:3px; text-shadow:0 0 10px #a78bfa; margin-bottom:28px; }
-.diff-label { color:#d8b4fe; letter-spacing:6px; margin-bottom:18px; text-shadow:0 0 8px #a78bfa; }
-.btn-group { display:flex; flex-direction:column; align-items:center; gap:12px; }
+#title-screen.active { display:flex; }
+#title-overlay { position:absolute; inset:0; background:linear-gradient(to bottom,rgba(0,0,0,0.25),rgba(0,0,0,0.6)); }
+#title-content { position:relative; z-index:2; display:flex; flex-direction:column; align-items:center; }
+.title-jp { font-weight:900; color:#fff; text-shadow:0 0 20px #c4b5fd,0 0 40px #7c3aed,2px 2px 0 #000; margin-bottom:8px; }
+.title-sub { color:#e9d5ff; letter-spacing:3px; text-shadow:0 0 10px #a78bfa; margin-bottom:24px; }
+.title-difflabel { color:#d8b4fe; letter-spacing:5px; margin-bottom:16px; text-shadow:0 0 8px #a78bfa; }
+.btn-group { display:flex; flex-direction:column; align-items:center; gap:10px; }
 .diff-btn {
-  border:none; cursor:pointer; border-radius:4px;
+  border:none; cursor:pointer; border-radius:5px;
   display:flex; align-items:center; justify-content:center;
   font-family:'Noto Serif JP',serif; font-weight:700; color:#fff; letter-spacing:4px;
-  text-shadow:1px 1px 2px #000; transition:transform 0.15s, filter 0.15s;
+  text-shadow:1px 1px 2px #000; transition:transform 0.12s, filter 0.12s;
 }
-.diff-btn:hover  { transform:scale(1.05); filter:brightness(1.15); }
-.diff-btn:active { transform:scale(0.97); }
-.btn-b1 { background:linear-gradient(135deg,#1e40af,#3b82f6,#93c5fd); box-shadow:0 4px 20px rgba(59,130,246,0.5); }
-.btn-b2 { background:linear-gradient(135deg,#065f46,#10b981,#6ee7b7); box-shadow:0 4px 20px rgba(16,185,129,0.5); }
-.btn-adv{ background:linear-gradient(135deg,#7c2d12,#dc2626,#fca5a5); box-shadow:0 4px 20px rgba(220,38,38,0.5); }
-.btn-lv { background:linear-gradient(135deg,#374151,#6b7280,#d1d5db); box-shadow:0 4px 20px rgba(107,114,128,0.4); }
+.diff-btn:active { transform:scale(0.96); }
+.btn-b1  { background:linear-gradient(135deg,#1e40af,#3b82f6,#93c5fd); box-shadow:0 4px 18px rgba(59,130,246,0.5); }
+.btn-b2  { background:linear-gradient(135deg,#065f46,#10b981,#6ee7b7); box-shadow:0 4px 18px rgba(16,185,129,0.5); }
+.btn-adv { background:linear-gradient(135deg,#7c2d12,#dc2626,#fca5a5); box-shadow:0 4px 18px rgba(220,38,38,0.5); }
+.btn-lv  { background:linear-gradient(135deg,#374151,#6b7280,#d1d5db); box-shadow:0 4px 18px rgba(107,114,128,0.4); }
 
-/* ===== 遊戲左側：主畫面 ===== */
-#game-left {
-  position:relative; overflow:hidden; flex-shrink:0;
-  background-size:cover; background-position:center;
-}
+/* ==================== 遊戲畫面（左＋右）==================== */
+#game-screen { display:none; flex-direction:row; }
+#game-screen.active { display:flex; }
+
+/* 左：遊戲主區 */
+#game-left { position:relative; overflow:hidden; flex-shrink:0; background-size:cover; background-position:center; }
 
 /* 判定線 */
 #judge-line {
@@ -71,15 +68,10 @@ body { background:#000; overflow:hidden; width:100vw; height:100vh; font-family:
 #character img { display:block; filter:drop-shadow(0 4px 8px rgba(0,0,0,0.5)); }
 #character.hit   { animation:hitFlash 1s ease; }
 #character.clear { animation:clearBounce 2s ease; }
-@keyframes hitFlash {
-  0%,100%{opacity:1;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.5))}
-  25%,75%{opacity:0.2;filter:drop-shadow(0 0 14px rgba(255,50,50,1))}
-}
-@keyframes clearBounce {
-  0%,100%{transform:translateY(0)} 25%{transform:translateY(-28px)} 50%{transform:translateY(-8px)} 75%{transform:translateY(-18px)}
-}
+@keyframes hitFlash   { 0%,100%{opacity:1} 25%,75%{opacity:0.2;filter:drop-shadow(0 0 14px red)} }
+@keyframes clearBounce{ 0%,100%{transform:translateY(0)} 25%{transform:translateY(-28px)} 50%{transform:translateY(-8px)} 75%{transform:translateY(-18px)} }
 
-/* 魔法光束 */
+/* 光束 */
 #attack-beam { position:absolute; z-index:25; pointer-events:none; display:none; transform-origin:left center; }
 #attack-beam img { width:100%; height:100%; object-fit:fill; }
 
@@ -90,12 +82,12 @@ body { background:#000; overflow:hidden; width:100vw; height:100vh; font-family:
   position:relative; z-index:2; font-family:'Noto Serif JP',serif; font-weight:900; color:#fff; line-height:1; user-select:none;
   text-shadow:3px 3px 0 #000,-3px -3px 0 #000,3px -3px 0 #000,-3px 3px 0 #000,0 0 12px rgba(220,180,255,0.9);
 }
-/* 目標圖案（最靠近判定線的）高亮 */
-.kana-tile.target .frame-img { filter:brightness(1.4) drop-shadow(0 0 8px rgba(255,220,80,0.9)); }
-.kana-tile.success { animation:kanaOK 0.4s ease forwards; }
+/* 最近目標高亮 */
+.kana-tile.target .frame-img { filter:brightness(1.5) drop-shadow(0 0 10px rgba(255,220,80,1)); }
+.kana-tile.success { animation:kanaOK   0.4s ease forwards; }
 .kana-tile.fail    { animation:kanaFail 0.5s ease forwards; }
 @keyframes kanaOK   { 0%{opacity:1;transform:scale(1)} 40%{transform:scale(1.3);filter:brightness(3)} 100%{opacity:0;transform:scale(0)} }
-@keyframes kanaFail { 0%{transform:scale(1);opacity:1} 30%{transform:scale(1.3);filter:hue-rotate(180deg) brightness(1.5)} 60%{transform:scale(0.8) translateX(-8px)} 100%{transform:scale(0);opacity:0} }
+@keyframes kanaFail { 0%{opacity:1;transform:scale(1)} 30%{transform:scale(1.3);filter:hue-rotate(180deg)} 60%{transform:scale(0.8) translateX(-8px)} 100%{opacity:0;transform:scale(0)} }
 
 /* HUD */
 #hud {
@@ -103,36 +95,36 @@ body { background:#000; overflow:hidden; width:100vw; height:100vh; font-family:
   display:flex; align-items:flex-start; justify-content:space-between; padding:8px 12px;
   background:linear-gradient(to bottom,rgba(0,0,0,0.65),transparent);
 }
-#hearts-container { display:flex; gap:4px; align-items:center; }
-.heart { font-size:24px; color:#ff3366; filter:drop-shadow(0 0 4px rgba(255,50,100,0.7)); transition:all 0.3s; }
+#hearts-container { display:flex; gap:4px; }
+.heart { color:#ff3366; filter:drop-shadow(0 0 4px rgba(255,50,100,0.7)); transition:all 0.3s; }
 .heart.lost { color:#333; filter:none; opacity:0.4; }
-#timer-display { font-family:'Noto Serif JP',serif; font-weight:900; color:#fff; text-shadow:0 0 10px rgba(200,150,255,0.8),1px 1px 2px #000; letter-spacing:2px; }
+#timer-display { font-family:'Noto Serif JP',serif; font-weight:900; color:#fff; text-shadow:0 0 10px rgba(200,150,255,0.8),1px 1px 2px #000; }
 #timer-display.urgent { color:#ff6666; animation:timerPulse 0.5s ease infinite; }
 @keyframes timerPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
-#difficulty-badge { font-family:'Noto Serif JP',serif; font-weight:700; color:#d8b4fe; letter-spacing:2px; text-shadow:0 0 8px rgba(167,139,250,0.6),1px 1px 2px #000; }
+#diff-badge { font-family:'Noto Serif JP',serif; font-weight:700; color:#d8b4fe; text-shadow:0 0 8px rgba(167,139,250,0.6),1px 1px 2px #000; }
 
-/* 覆蓋訊息 */
+/* 覆蓋訊息（只在遊戲左區）*/
 .overlay-msg {
   position:absolute; inset:0; z-index:50; display:flex; flex-direction:column;
-  align-items:center; justify-content:center; pointer-events:none; opacity:0; transition:opacity 0.3s;
+  align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity 0.3s;
 }
-.overlay-msg.show { pointer-events:auto; opacity:1; }
-#start-msg-wrap  { background:radial-gradient(ellipse at center,rgba(124,58,237,0.45),transparent 70%); }
-#clear-msg-wrap  { background:radial-gradient(ellipse at center,rgba(16,185,129,0.35),transparent 70%); }
-#over-msg-wrap   { background:radial-gradient(ellipse at center,rgba(220,38,38,0.35),transparent 70%); }
-.msg-text { font-family:'Noto Serif JP',serif; font-weight:900; color:#fff; letter-spacing:6px; }
-#start-msg { text-shadow:0 0 20px #a78bfa,0 0 40px #7c3aed,2px 2px 0 #000; animation:startAnim 2.5s ease forwards; }
-@keyframes startAnim { 0%{opacity:0;transform:scale(0.5)} 30%{opacity:1;transform:scale(1)} 80%{opacity:1;transform:scale(1)} 100%{opacity:0;transform:scale(1.3)} }
-#clear-msg  { text-shadow:0 0 20px #6ee7b7,0 0 40px #10b981,2px 2px 0 #000; animation:clearFlash 1.5s ease infinite; }
+.overlay-msg.show { opacity:1; pointer-events:auto; }
+#start-wrap { background:radial-gradient(ellipse at center,rgba(124,58,237,0.45),transparent 70%); }
+#clear-wrap  { background:radial-gradient(ellipse at center,rgba(16,185,129,0.35),transparent 70%); }
+#over-wrap   { background:radial-gradient(ellipse at center,rgba(220,38,38,0.35),transparent 70%); }
+.omsg { font-family:'Noto Serif JP',serif; font-weight:900; color:#fff; letter-spacing:6px; }
+#start-omsg { text-shadow:0 0 20px #a78bfa,0 0 40px #7c3aed,2px 2px 0 #000; animation:startAnim 2.5s ease forwards; }
+@keyframes startAnim { 0%{opacity:0;transform:scale(0.5)} 25%{opacity:1;transform:scale(1)} 80%{opacity:1} 100%{opacity:0;transform:scale(1.3)} }
+#clear-omsg { text-shadow:0 0 20px #6ee7b7,0 0 40px #10b981,2px 2px 0 #000; animation:clearFlash 1.5s ease infinite; }
 @keyframes clearFlash { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05);filter:brightness(1.3)} }
-#over-msg   { color:#ff6666; text-shadow:0 0 20px #ef4444,0 0 40px #dc2626,2px 2px 0 #000; }
+#over-omsg  { color:#ff6666; text-shadow:0 0 20px #ef4444,2px 2px 0 #000; }
 .back-btn {
-  margin-top:24px; padding:10px 36px; background:rgba(255,255,255,0.15);
+  margin-top:20px; padding:10px 32px; background:rgba(255,255,255,0.15);
   border:2px solid rgba(255,255,255,0.5); border-radius:6px; color:#fff;
   font-family:'Noto Serif JP',serif; font-weight:700; letter-spacing:4px;
   cursor:pointer; transition:all 0.2s; pointer-events:auto; text-shadow:1px 1px 2px #000;
 }
-.back-btn:hover { background:rgba(255,255,255,0.3); transform:scale(1.05); }
+.back-btn:active { background:rgba(255,255,255,0.3); transform:scale(0.97); }
 
 /* 判定浮現 */
 .judge-popup { position:absolute; z-index:45; font-family:'Noto Serif JP',serif; font-weight:900; pointer-events:none; animation:judgePopup 0.8s ease forwards; }
@@ -140,43 +132,37 @@ body { background:#000; overflow:hidden; width:100vw; height:100vh; font-family:
 .judge-popup.miss { color:#fca5a5; text-shadow:0 0 10px #ef4444; }
 @keyframes judgePopup { 0%{opacity:1;transform:translateY(0) scale(1)} 100%{opacity:0;transform:translateY(-40px) scale(1.3)} }
 
-/* ===== 遊戲右側：鍵盤區 ===== */
+/* 右：鍵盤區 */
 #game-right {
   flex-shrink:0; display:flex; flex-direction:column;
   align-items:center; justify-content:center;
-  background:rgba(10,10,30,0.92); border-left:1px solid rgba(139,92,246,0.3);
-  gap:0; padding:0 8px;
+  background:rgba(8,8,24,0.93); border-left:1px solid rgba(139,92,246,0.3);
+  padding:6px 6px;
 }
-
-/* 輸入顯示 */
-#input-display {
-  display:flex; flex-direction:column; align-items:center; width:100%; margin-bottom:6px; gap:3px;
+#input-buffer-wrap {
+  width:100%; display:flex; align-items:center; justify-content:center;
+  margin-bottom:8px;
 }
-#current-target { display:none; }
 #input-buffer {
   font-family:monospace; font-weight:700; color:#a78bfa; letter-spacing:3px;
-  text-align:center; min-height:1.2em;
-  background:rgba(109,40,217,0.2); border:1px solid rgba(139,92,246,0.4);
-  border-radius:6px; padding:2px 10px; width:90%;
+  text-align:center; background:rgba(109,40,217,0.2);
+  border:1px solid rgba(139,92,246,0.4); border-radius:6px; padding:3px 12px;
+  width:90%; min-height:1.4em;
 }
-#input-hint { display:none; }
-
-/* 鍵盤 */
-#keyboard { display:flex; flex-direction:column; align-items:center; gap:4px; width:100%; }
+#keyboard { display:flex; flex-direction:column; align-items:center; gap:5px; width:100%; }
 .key-row { display:flex; justify-content:center; gap:4px; }
 .key {
-  border:none; border-radius:6px; cursor:pointer; font-weight:700; color:#fff;
-  background:rgba(109,40,217,0.4); border:1px solid rgba(139,92,246,0.5);
-  transition:transform 0.08s, background 0.08s; text-shadow:1px 1px 2px #000;
+  border-radius:6px; cursor:pointer; font-weight:700; color:#fff;
+  background:rgba(109,40,217,0.45); border:1.5px solid rgba(139,92,246,0.55);
   font-family:monospace; letter-spacing:1px;
   display:flex; align-items:center; justify-content:center;
-  user-select:none; -webkit-user-select:none; touch-action:manipulation;
+  user-select:none; -webkit-user-select:none;
+  transition:background 0.08s, transform 0.08s;
+  /* 防止長按選字 */
+  -webkit-touch-callout:none; touch-action:manipulation;
 }
-.key:active, .key.pressed { background:rgba(220,38,38,0.7); transform:scale(0.9); border-color:#fca5a5; }
-.key.correct  { background:rgba(34,197,94,0.7) !important; }
-.key-del {
-  background:rgba(55,65,81,0.6); border-color:rgba(107,114,128,0.5); font-size:13px;
-}
+.key:active, .key.flash { background:rgba(139,92,246,0.85); transform:scale(0.88); }
+.key-del { background:rgba(55,65,81,0.6); border-color:rgba(107,114,128,0.5); }
 </style>
 </head>
 <body>
@@ -189,41 +175,48 @@ body { background:#000; overflow:hidden; width:100vw; height:100vh; font-family:
 <div id="game-wrapper">
   <div id="game-canvas">
 
-    <!-- 標題畫面（全寬覆蓋）-->
-    <div id="title-screen" class="active">
-      <div class="overlay"></div>
-      <div class="content">
-        <div class="game-title-jp" id="title-txt">芙莉蓮の五十音バトル</div>
-        <div class="subtitle-txt">～ 声で魔法を放て ～</div>
-        <div class="diff-label">難度を選んでください</div>
+    <!-- ===== 標題畫面（覆蓋整個 canvas）===== -->
+    <div id="title-screen" class="screen active">
+      <div id="title-overlay"></div>
+      <div id="title-content">
+        <div class="title-jp"  id="title-jp-txt">芙莉蓮の五十音バトル</div>
+        <div class="title-sub">～ 声で魔法を放て ～</div>
+        <div class="title-difflabel">難度を選んでください</div>
         <div class="btn-group" id="btn-group"></div>
       </div>
     </div>
 
-    <!-- 左側：遊戲主畫面 -->
-    <div id="game-left">
-      <div id="judge-line"></div>
-      <div id="character"><img id="char-img" src="images/frierenstand.png" alt=""></div>
-      <div id="attack-beam"><img src="images/attackeffect.png" alt=""></div>
-      <div id="hud">
-        <div id="hearts-container"></div>
-        <div id="timer-display">2:00</div>
-        <div id="difficulty-badge"></div>
-      </div>
-      <!-- 覆蓋訊息 -->
-      <div id="start-msg-wrap"  class="overlay-msg"><div class="msg-text" id="start-msg">ゲームスタート</div></div>
-      <div id="clear-msg-wrap"  class="overlay-msg"><div class="msg-text" id="clear-msg">ゲームクリア！</div><button class="back-btn" onclick="goTitle()">タイトルへ戻る</button></div>
-      <div id="over-msg-wrap"   class="overlay-msg"><div class="msg-text" id="over-msg">ゲームオーバー</div><button class="back-btn" onclick="goTitle()">タイトルへ戻る</button></div>
-    </div>
+    <!-- ===== 遊戲畫面 ===== -->
+    <div id="game-screen" class="screen">
 
-    <!-- 右側：鍵盤區 -->
-    <div id="game-right">
-      <div id="input-display">
-        <div id="current-target">　</div>
-        <div id="input-buffer"></div>
-        <div id="input-hint">ローマ字を入力</div>
+      <!-- 左：遊戲主區 -->
+      <div id="game-left">
+        <div id="judge-line"></div>
+        <div id="character"><img id="char-img" src="images/frierenstand.png" alt=""></div>
+        <div id="attack-beam"><img src="images/attackeffect.png" alt=""></div>
+        <div id="hud">
+          <div id="hearts-container"></div>
+          <div id="timer-display">2:00</div>
+          <div id="diff-badge"></div>
+        </div>
+        <!-- 遊戲覆蓋訊息 -->
+        <div id="start-wrap" class="overlay-msg"><div class="omsg" id="start-omsg">ゲームスタート</div></div>
+        <div id="clear-wrap" class="overlay-msg">
+          <div class="omsg" id="clear-omsg">ゲームクリア！</div>
+          <button class="back-btn" id="clear-back-btn">タイトルへ戻る</button>
+        </div>
+        <div id="over-wrap"  class="overlay-msg">
+          <div class="omsg" id="over-omsg">ゲームオーバー</div>
+          <button class="back-btn" id="over-back-btn">タイトルへ戻る</button>
+        </div>
       </div>
-      <div id="keyboard"></div>
+
+      <!-- 右：鍵盤區 -->
+      <div id="game-right">
+        <div id="input-buffer-wrap"><div id="input-buffer"></div></div>
+        <div id="keyboard"></div>
+      </div>
+
     </div>
 
   </div>
@@ -231,214 +224,220 @@ body { background:#000; overflow:hidden; width:100vw; height:100vh; font-family:
 
 <script>
 // ============================================================
-// 羅馬字對應表（每個假名 → 接受的羅馬字寫法）
+// 羅馬字對應
 // ============================================================
 const ROMAJI = {
-  'あ':'a',  'い':'i',  'う':'u',  'え':'e',  'お':'o',
-  'か':'ka', 'き':'ki', 'く':'ku', 'け':'ke', 'こ':'ko',
-  'さ':'sa', 'し':'si', 'す':'su', 'せ':'se', 'そ':'so',
-  'た':'ta', 'ち':'ti', 'つ':'tu', 'て':'te', 'と':'to',
-  'な':'na', 'に':'ni', 'ぬ':'nu', 'ね':'ne', 'の':'no',
-  'は':'ha', 'ひ':'hi', 'ふ':'hu', 'へ':'he', 'ほ':'ho',
-  'ま':'ma', 'み':'mi', 'む':'mu', 'め':'me', 'も':'mo',
-  'や':'ya', 'ゆ':'yu', 'よ':'yo',
-  'ら':'ra', 'り':'ri', 'る':'ru', 'れ':'re', 'ろ':'ro',
-  'わ':'wa', 'を':'o',
+  'あ':'a','い':'i','う':'u','え':'e','お':'o',
+  'か':'ka','き':'ki','く':'ku','け':'ke','こ':'ko',
+  'さ':'sa','し':'si','す':'su','せ':'se','そ':'so',
+  'た':'ta','ち':'ti','つ':'tu','て':'te','と':'to',
+  'な':'na','に':'ni','ぬ':'nu','ね':'ne','の':'no',
+  'は':'ha','ひ':'hi','ふ':'hu','へ':'he','ほ':'ho',
+  'ま':'ma','み':'mi','む':'mu','め':'me','も':'mo',
+  'や':'ya','ゆ':'yu','よ':'yo',
+  'ら':'ra','り':'ri','る':'ru','れ':'re','ろ':'ro',
+  'わ':'wa','を':'o',
 };
-
-// 允許的替代寫法
 const ROMAJI_ALT = {
-  'し':['si','shi'], 'ち':['ti','chi'], 'つ':['tu','tsu'],
-  'ふ':['hu','fu'],  'を':['o','wo'],
+  'し':['si','shi'],'ち':['ti','chi'],'つ':['tu','tsu'],
+  'ふ':['hu','fu'],'を':['o','wo'],
 };
+function getAccepted(kana) {
+  const main = ROMAJI[kana] || '';
+  const alt  = ROMAJI_ALT[kana] || [];
+  return [...new Set([main, ...alt])].filter(Boolean);
+}
 
 // ============================================================
-// 難度設定
+// 難度
 // ============================================================
 const DIFFICULTY = {
-  beginner1: {
-    label:'初級 I',
-    kana:['あ','い','う','え','お','か','き','く','け','こ','さ','し','す','せ','そ','た','ち','つ','て','と'],
-    totalTiles:40, speed:55, interval:2400,
-    missPixels:80,   // 圖案超過判定線左方這個距離 → MISS
-  },
-  beginner2: {
-    label:'初級 II',
-    kana:['な','に','ぬ','ね','の','は','ひ','ふ','へ','ほ','ま','み','む','め','も','や','ゆ','よ','ら','り','る','れ','ろ','わ','を'],
-    totalTiles:40, speed:60, interval:2400,
-    missPixels:80,
-  },
-  advanced: {
-    label:'進階',
-    kana:['あ','い','う','え','お','か','き','く','け','こ','さ','し','す','せ','そ','た','ち','つ','て','と','な','に','ぬ','ね','の','は','ひ','ふ','へ','ほ','ま','み','む','め','も','や','ゆ','よ','ら','り','る','れ','ろ','わ','を'],
-    totalTiles:40, speed:75, interval:2000,
-    missPixels:70,
-  }
+  beginner1:{label:'初級 I',  kana:['あ','い','う','え','お','か','き','く','け','こ','さ','し','す','せ','そ','た','ち','つ','て','と'], totalTiles:40, speed:55, interval:2400, missPixels:80},
+  beginner2:{label:'初級 II', kana:['な','に','ぬ','ね','の','は','ひ','ふ','へ','ほ','ま','み','む','め','も','や','ゆ','よ','ら','り','る','れ','ろ','わ','を'], totalTiles:40, speed:60, interval:2400, missPixels:80},
+  advanced: {label:'進階',    kana:['あ','い','う','え','お','か','き','く','け','こ','さ','し','す','せ','そ','た','ち','つ','て','と','な','に','ぬ','ね','の','は','ひ','ふ','へ','ほ','ま','み','む','め','も','や','ゆ','よ','ら','り','る','れ','ろ','わ','を'], totalTiles:40, speed:75, interval:2000, missPixels:70},
 };
 
 // ============================================================
-// 版面尺寸（由 JS 計算）
+// 狀態
 // ============================================================
-let GAME_W, GAME_H, KBD_W, TOTAL_W;
-const BASE_GAME_H = 600;
-const CHAR_W=170, CHAR_H=240, CHAR_X=5, CHAR_BOTTOM=8;
-let JUDGE_X;
-const TILE_SIZE=100;
-const TILE_MIN_Y=50, TILE_MAX_Y=BASE_GAME_H-TILE_SIZE-50;
-
-// ============================================================
-// 遊戲狀態
-// ============================================================
-let state = {
-  phase:'title', difficulty:null,
+let G = {
+  phase:'title', diff:null,
   hearts:6, timeLeft:120,
   tiles:[], spawnTimer:null, gameTimer:null,
-  spawnQueue:[], spawnIndex:0,
-  inputBuffer:'',   // 目前打入的羅馬字
-  gameRunning:false,
+  queue:[], qIdx:0,
+  buf:'',        // 輸入緩衝
+  running:false,
 };
 
 // ============================================================
-// RWD 縮放
+// 版面尺寸（由 resize() 計算）
+// ============================================================
+let VW, VH, LW, RW, JUDGE_X;
+const CHAR_W=170, CHAR_H=240, CHAR_X=5, CHAR_BOT=8;
+const TS = 100; // TILE_SIZE
+const TILE_MIN_Y=50;
+let   TILE_MAX_Y;
+
+// ============================================================
+// resize：計算版面，按鈕大小等全部依 VH 縮放
 // ============================================================
 function resize() {
-  const ww = window.innerWidth, wh = window.innerHeight;
-  // 鍵盤區固定寬度（依螢幕大小）
-  KBD_W = Math.min(Math.max(ww * 0.28, 180), 260);
-  GAME_W = ww - KBD_W;
-  GAME_H = wh;
+  VW = window.innerWidth;
+  VH = window.innerHeight;
+  RW = Math.round(Math.min(Math.max(VW*0.27, 170), 250));
+  LW = VW - RW;
+  TILE_MAX_Y = VH - TS - 50;
+  JUDGE_X = CHAR_X + CHAR_W + Math.round(LW * 0.055);
 
   const canvas = document.getElementById('game-canvas');
-  canvas.style.width  = ww + 'px';
-  canvas.style.height = wh + 'px';
+  canvas.style.width  = VW+'px';
+  canvas.style.height = VH+'px';
 
-  const left = document.getElementById('game-left');
-  left.style.width  = GAME_W + 'px';
-  left.style.height = GAME_H + 'px';
+  // 標題畫面全寬
+  const ts = document.getElementById('title-screen');
+  ts.style.width  = VW+'px';
+  ts.style.height = VH+'px';
 
-  const right = document.getElementById('game-right');
-  right.style.width  = KBD_W + 'px';
-  right.style.height = GAME_H + 'px';
+  // 遊戲畫面全寬
+  const gs = document.getElementById('game-screen');
+  gs.style.width  = VW+'px';
+  gs.style.height = VH+'px';
 
-  // 判定線位置
-  JUDGE_X = CHAR_X + CHAR_W + Math.round(GAME_W * 0.06);
-  document.getElementById('judge-line').style.left = JUDGE_X + 'px';
+  // 左區
+  const gl = document.getElementById('game-left');
+  gl.style.width  = LW+'px';
+  gl.style.height = VH+'px';
+
+  // 右區
+  const gr = document.getElementById('game-right');
+  gr.style.width  = RW+'px';
+  gr.style.height = VH+'px';
+
+  // 判定線
+  document.getElementById('judge-line').style.left = JUDGE_X+'px';
 
   // 角色
   const char = document.getElementById('character');
-  char.style.left   = CHAR_X + 'px';
-  char.style.bottom = CHAR_BOTTOM + 'px';
-  document.getElementById('char-img').style.cssText = `width:${CHAR_W}px;height:${CHAR_H}px;object-fit:contain;object-position:bottom center;`;
+  char.style.left   = CHAR_X+'px';
+  char.style.bottom = CHAR_BOT+'px';
+  const ci = document.getElementById('char-img');
+  ci.style.width  = CHAR_W+'px';
+  ci.style.height = CHAR_H+'px';
+  ci.style.objectFit = 'contain';
+  ci.style.objectPosition = 'bottom center';
 
   // HUD 字型
-  const hScale = GAME_H / 600;
-  document.getElementById('timer-display').style.fontSize    = Math.round(28*hScale) + 'px';
-  document.getElementById('difficulty-badge').style.fontSize = Math.round(12*hScale) + 'px';
+  const s = VH/600;
+  document.getElementById('timer-display').style.fontSize = Math.round(27*s)+'px';
+  document.getElementById('diff-badge').style.fontSize    = Math.round(12*s)+'px';
+  document.querySelectorAll('.heart').forEach(h => h.style.fontSize = Math.round(22*s)+'px');
 
-  // 標題畫面
-  const ts = document.getElementById('title-screen');
-  ts.style.cssText = `position:absolute;inset:0;z-index:10;background-size:cover;background-position:center;width:${ww}px;height:${wh}px;`;
-  if (ts.classList.contains('active')) ts.style.display = 'flex';
+  // 標題字型
+  document.getElementById('title-jp-txt').style.fontSize = Math.round(36*s)+'px';
+  document.querySelectorAll('.title-sub').forEach(e=>e.style.fontSize=Math.round(14*s)+'px');
+  document.querySelectorAll('.title-difflabel').forEach(e=>e.style.fontSize=Math.round(13*s)+'px');
 
-  document.getElementById('title-txt').style.fontSize = Math.round(36*hScale) + 'px';
+  // 覆蓋訊息字型
+  ['start-omsg','clear-omsg','over-omsg'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.style.fontSize=Math.round(48*s)+'px';
+  });
+  document.querySelectorAll('.back-btn').forEach(b=>b.style.fontSize=Math.round(15*s)+'px');
 
-  // 鍵盤尺寸
+  // 按鈕大小
+  const bw=Math.round(Math.min(LW*0.55,240)), bh=Math.round(VH*0.09);
+  document.querySelectorAll('.diff-btn').forEach(b=>{
+    b.style.width=bw+'px'; b.style.height=bh+'px';
+    b.style.fontSize=Math.round(bh*0.33)+'px';
+  });
+
   buildKeyboard();
-  checkOrientation();
+  checkOri();
 }
 
-function checkOrientation() {
+function checkOri() {
   document.getElementById('rotate-notice').style.display =
-    (window.innerWidth < window.innerHeight && window.innerWidth < 900) ? 'flex' : 'none';
+    (VW < VH && VW < 900) ? 'flex' : 'none';
 }
-
 window.addEventListener('resize', resize);
-window.addEventListener('orientationchange', () => setTimeout(resize, 300));
+window.addEventListener('orientationchange', ()=>setTimeout(resize,300));
 
 // ============================================================
-// 鍵盤建立
+// 鍵盤
 // ============================================================
 function buildKeyboard() {
   const kbd = document.getElementById('keyboard');
   kbd.innerHTML = '';
+  const rows=[['q','w','e','r','t','y','u','i','o','p'],['a','s','d','f','g','h','j','k','l'],['z','x','c','v','b','n','m','⌫']];
+  const gap=4, cols=10;
+  const kw = Math.floor((RW - gap*(cols+1)) / cols);
+  const kh = Math.floor((VH*0.55)/3);
+  const fs = Math.max(11, Math.min(17, Math.floor(kw*0.52)));
 
-  const rows = [
-    ['q','w','e','r','t','y','u','i','o','p'],
-    ['a','s','d','f','g','h','j','k','l'],
-    ['z','x','c','v','b','n','m','⌫'],
-  ];
-
-  // 計算按鍵大小
-  const maxRowLen = 10;
-  const gap = 4;
-  const keyW = Math.floor((KBD_W - gap*(maxRowLen+1)) / maxRowLen);
-  const keyH = Math.floor((GAME_H * 0.52) / 3);
-  const fontSize = Math.max(12, Math.min(18, Math.floor(keyW * 0.55)));
-
-  rows.forEach(row => {
-    const rowEl = document.createElement('div');
-    rowEl.className = 'key-row';
-    row.forEach(ch => {
-      const btn = document.createElement('button');
-      btn.className = 'key' + (ch === '⌫' ? ' key-del' : '');
-      btn.textContent = ch.toUpperCase();
-      btn.dataset.key = ch;
-      btn.style.cssText = `width:${keyW}px;height:${keyH}px;font-size:${fontSize}px;`;
-      btn.addEventListener('pointerdown', e => { e.preventDefault(); handleKey(ch); flashKey(btn); });
+  rows.forEach(row=>{
+    const rowEl=document.createElement('div'); rowEl.className='key-row';
+    row.forEach(ch=>{
+      const btn=document.createElement('button');
+      btn.className='key'+(ch==='⌫'?' key-del':'');
+      btn.textContent=ch==='⌫'?'⌫':ch.toUpperCase();
+      btn.dataset.ch=ch;
+      btn.style.cssText=`width:${kw}px;height:${kh}px;font-size:${fs}px;border:none;`;
+      // 用 pointerdown 確保 iOS/Android 都能即時響應
+      btn.addEventListener('pointerdown', e=>{ e.preventDefault(); onKey(ch); flashKey(btn); });
       rowEl.appendChild(btn);
     });
     kbd.appendChild(rowEl);
   });
 
-  // input-display 字型
-  const hScale = GAME_H / 600;
-  document.getElementById('current-target').style.fontSize = Math.round(22*hScale) + 'px';
-  document.getElementById('input-buffer').style.fontSize   = Math.round(18*hScale) + 'px';
-  document.getElementById('input-hint').style.fontSize     = Math.round(11*hScale) + 'px';
+  // input-buffer 字型
+  document.getElementById('input-buffer').style.fontSize = Math.round(VH/600*18)+'px';
 }
 
 function flashKey(btn) {
-  btn.classList.add('pressed');
-  setTimeout(() => btn.classList.remove('pressed'), 150);
+  btn.classList.add('flash');
+  setTimeout(()=>btn.classList.remove('flash'),120);
 }
 
 // ============================================================
 // 初始化
 // ============================================================
-function initTitle() {
+function init() {
   document.getElementById('title-screen').style.backgroundImage = "url('images/gamebeginingbackground.png')";
   document.getElementById('game-left').style.backgroundImage    = "url('images/gamebeginbackground.png')";
 
-  const g = document.getElementById('btn-group');
-  g.innerHTML = '';
-  [
-    {key:'beginner1',label:'初級 I', cls:'btn-b1', w:220,h:56},
-    {key:'beginner2',label:'初級 II',cls:'btn-b2', w:220,h:56},
-    {key:'advanced', label:'進階',   cls:'btn-adv',w:220,h:56},
-    {key:'leave',    label:'離開',   cls:'btn-lv', w:170,h:46},
-  ].forEach(b => {
-    const btn = document.createElement('button');
-    btn.className = 'diff-btn ' + b.cls;
-    btn.style.cssText = `width:${b.w}px;height:${b.h}px;font-size:17px;`;
-    btn.textContent = b.label;
-    btn.onclick = () => b.key === 'leave' ? window.close() : startGame(b.key);
+  // 按鈕
+  const g=document.getElementById('btn-group'); g.innerHTML='';
+  [{key:'beginner1',label:'初級 I',cls:'btn-b1'},{key:'beginner2',label:'初級 II',cls:'btn-b2'},
+   {key:'advanced',label:'進階',cls:'btn-adv'},{key:'leave',label:'離開',cls:'btn-lv'}].forEach(b=>{
+    const btn=document.createElement('button');
+    btn.className='diff-btn '+b.cls; btn.textContent=b.label;
+    btn.onclick=()=>b.key==='leave'?window.close():startGame(b.key);
     g.appendChild(btn);
   });
 
-  showTitleScreen(true);
+  // 回標題按鈕
+  document.getElementById('clear-back-btn').onclick = goTitle;
+  document.getElementById('over-back-btn').onclick  = goTitle;
+
   resize();
 }
 
-function showTitleScreen(show) {
-  const ts = document.getElementById('title-screen');
-  if (show) { ts.classList.add('active'); ts.style.display='flex'; }
-  else       { ts.classList.remove('active'); ts.style.display='none'; }
+// ============================================================
+// 畫面切換
+// ============================================================
+function showTitle() {
+  document.getElementById('title-screen').classList.add('active');
+  document.getElementById('game-screen').classList.remove('active');
 }
-
+function showGame() {
+  document.getElementById('title-screen').classList.remove('active');
+  document.getElementById('game-screen').classList.add('active');
+}
 function goTitle() {
   stopGame();
-  showTitleScreen(true);
-  state.phase = 'title';
+  hideAllOverlays();
+  showTitle();
+  G.phase='title';
 }
 
 // ============================================================
@@ -446,249 +445,205 @@ function goTitle() {
 // ============================================================
 function startGame(diffKey) {
   stopGame();
-  Object.assign(state, {
-    difficulty:diffKey, hearts:6, timeLeft:120,
-    tiles:[], spawnIndex:0, gameRunning:false,
-    inputBuffer:'',
-  });
-  state.spawnQueue = buildQueue(diffKey);
-
-  showTitleScreen(false);
   hideAllOverlays();
-  renderHearts();
-  updateTimer();
-  document.getElementById('difficulty-badge').textContent = DIFFICULTY[diffKey].label;
+  Object.assign(G,{diff:diffKey,hearts:6,timeLeft:120,tiles:[],qIdx:0,running:false,buf:''});
+  G.queue = buildQueue(diffKey);
+  document.getElementById('input-buffer').textContent='';
+  document.getElementById('diff-badge').textContent=DIFFICULTY[diffKey].label;
   document.querySelectorAll('.kana-tile,.judge-popup').forEach(t=>t.remove());
-  document.getElementById('attack-beam').style.display = 'none';
-  document.getElementById('input-buffer').textContent = '';
-  document.getElementById('current-target').textContent = '　';
+  document.getElementById('attack-beam').style.display='none';
+  renderHearts(); updateTimer();
   setChar('stand');
+  showGame();
   showStartMsg();
 }
 
-function buildQueue(diffKey) {
-  const kana = DIFFICULTY[diffKey].kana, total = DIFFICULTY[diffKey].totalTiles;
-  const q = [];
-  while (q.length < total) q.push(...[...kana].sort(()=>Math.random()-0.5));
-  return q.slice(0, total);
+function buildQueue(dk) {
+  const k=DIFFICULTY[dk].kana, total=DIFFICULTY[dk].totalTiles, q=[];
+  while(q.length<total) q.push(...[...k].sort(()=>Math.random()-0.5));
+  return q.slice(0,total);
 }
 
 function showStartMsg() {
-  const w = document.getElementById('start-msg-wrap');
+  const w=document.getElementById('start-wrap');
+  const m=document.getElementById('start-omsg');
+  // 重設動畫
+  m.style.animation='none'; void m.offsetWidth;
+  m.style.animation='startAnim 2.5s ease forwards';
   w.classList.add('show');
-  setTimeout(() => { w.classList.remove('show'); beginGameplay(); }, 2500);
+  setTimeout(()=>{ w.classList.remove('show'); beginGame(); }, 2500);
 }
 
 // ============================================================
 // 遊戲主體
 // ============================================================
-function beginGameplay() {
-  state.gameRunning = true;
-  state.phase = 'playing';
-
-  state.gameTimer = setInterval(() => {
-    if (!state.gameRunning) return;
-    if (--state.timeLeft <= 0) triggerClear();
+function beginGame() {
+  G.running=true; G.phase='playing';
+  G.gameTimer=setInterval(()=>{
+    if(!G.running) return;
+    if(--G.timeLeft<=0) triggerClear();
     updateTimer();
-  }, 1000);
+  },1000);
 
-  // 第一批：直接放在螢幕內，讓玩家馬上看到
-  const spd = DIFFICULTY[state.difficulty].speed;
-  spawnTileAt(JUDGE_X + spd * 3);   // 3秒後到判定線
-  spawnTileAt(JUDGE_X + spd * 7);   // 7秒後
-  spawnTileAt(JUDGE_X + spd * 11);  // 11秒後
-
-  scheduleNext();
+  // 第一批：放在能很快飄到判定線的位置
+  const spd=DIFFICULTY[G.diff].speed;
+  spawnAt(JUDGE_X + spd*3);
+  spawnAt(JUDGE_X + spd*7);
+  spawnAt(JUDGE_X + spd*11);
+  schedNext();
 }
 
-function scheduleNext() {
-  if (!state.gameRunning || state.spawnIndex >= state.spawnQueue.length) return;
-  const diff = DIFFICULTY[state.difficulty];
-  const jitter = (Math.random()*300)-150;
-  state.spawnTimer = setTimeout(() => { spawnTile(); scheduleNext(); }, diff.interval+jitter);
+function schedNext() {
+  if(!G.running || G.qIdx>=G.queue.length) return;
+  const d=DIFFICULTY[G.diff];
+  const jitter=(Math.random()*300)-150;
+  G.spawnTimer=setTimeout(()=>{ spawnAt(LW+TS); schedNext(); }, d.interval+jitter);
 }
 
-function spawnTile() { spawnTileAt(GAME_W + TILE_SIZE); }
-
-function spawnTileAt(startX) {
-  if (!state.gameRunning || state.spawnIndex >= state.spawnQueue.length) return;
-  const kana = state.spawnQueue[state.spawnIndex++];
-
+function spawnAt(startX) {
+  if(!G.running || G.qIdx>=G.queue.length) return;
+  const kana=G.queue[G.qIdx++];
   let y, tries=0;
   do {
-    y = TILE_MIN_Y + Math.random()*(TILE_MAX_Y - TILE_MIN_Y);
-    tries++;
-    const clash = state.tiles.some(t => !t.removed && Math.abs(t.y-y) < TILE_SIZE+60);
-    if (!clash || tries>15) break;
+    y=TILE_MIN_Y+Math.random()*(TILE_MAX_Y-TILE_MIN_Y);
+    const clash=G.tiles.some(t=>!t.removed && Math.abs(t.y-y)<TS+60);
+    if(!clash||++tries>15) break;
   } while(true);
 
-  const el = document.createElement('div');
-  el.className = 'kana-tile';
-  el.style.cssText = `width:${TILE_SIZE}px;height:${TILE_SIZE}px;left:${startX}px;top:${y}px;`;
-  const fi = document.createElement('img'); fi.className='frame-img'; fi.src='images/50onframe.png';
-  const kt = document.createElement('span'); kt.className='kana-text'; kt.textContent=kana;
-  kt.style.fontSize = Math.round(TILE_SIZE*0.48)+'px';
+  const el=document.createElement('div');
+  el.className='kana-tile';
+  el.style.cssText=`width:${TS}px;height:${TS}px;left:${startX}px;top:${y}px;`;
+  const fi=document.createElement('img'); fi.className='frame-img'; fi.src='images/50onframe.png';
+  const kt=document.createElement('span'); kt.className='kana-text'; kt.textContent=kana;
+  kt.style.fontSize=Math.round(TS*0.47)+'px';
   el.appendChild(fi); el.appendChild(kt);
   document.getElementById('game-left').appendChild(el);
-
-  state.tiles.push({el, x:startX, y, kana, judged:false, missTriggered:false, removed:false});
-  updateTargetDisplay();
+  G.tiles.push({el,x:startX,y,kana,judged:false,missTriggered:false,removed:false});
+  updateTarget();
 }
 
 // ============================================================
 // 遊戲迴圈
 // ============================================================
-let lastTime=0;
-function gameLoop(ts) {
-  const dt = Math.min((ts-lastTime)/1000, 0.1);
-  lastTime = ts;
-
-  if (state.gameRunning && state.difficulty) {
-    const {speed, missPixels} = DIFFICULTY[state.difficulty];
-    const toRemove = [];
-
-    for (const tile of state.tiles) {
-      if (tile.removed) continue;
-      tile.x -= speed*dt;
-      tile.el.style.left = tile.x+'px';
-      const cx = tile.x + TILE_SIZE/2;
-      if (!tile.judged && !tile.missTriggered && cx < JUDGE_X - missPixels) {
-        tile.missTriggered = true;
-        triggerMiss(tile);
-      }
-      if (tile.x + TILE_SIZE < -10) toRemove.push(tile);
+let lastT=0;
+function loop(ts) {
+  const dt=Math.min((ts-lastT)/1000,0.1); lastT=ts;
+  if(G.running && G.diff) {
+    const {speed,missPixels}=DIFFICULTY[G.diff];
+    const toRm=[];
+    for(const t of G.tiles) {
+      if(t.removed) continue;
+      t.x-=speed*dt; t.el.style.left=t.x+'px';
+      const cx=t.x+TS/2;
+      if(!t.judged&&!t.missTriggered&&cx<JUDGE_X-missPixels){ t.missTriggered=true; triggerMiss(t); }
+      if(t.x+TS<-10) toRm.push(t);
     }
-    toRemove.forEach(removeTile);
-    updateTargetHighlight();
+    toRm.forEach(rmTile);
+    updateTarget();
   }
-  requestAnimationFrame(gameLoop);
+  requestAnimationFrame(loop);
 }
-requestAnimationFrame(ts => { lastTime=ts; gameLoop(ts); });
+requestAnimationFrame(ts=>{ lastT=ts; loop(ts); });
 
-function removeTile(t) {
-  if (t.removed) return;
+function rmTile(t) {
+  if(t.removed) return;
   t.removed=true; t.el.remove();
-  state.tiles = state.tiles.filter(x=>x!==t);
-  updateTargetDisplay();
+  G.tiles=G.tiles.filter(x=>x!==t);
 }
 
 // ============================================================
-// 目標圖案（最靠近判定線的未判定圖案）
+// 目標：最靠近判定線的未判定圖案
 // ============================================================
 function getTarget() {
-  return state.tiles
-    .filter(t => !t.judged && !t.removed && !t.missTriggered && t.x + TILE_SIZE/2 > JUDGE_X - 50)
-    .sort((a,b) => (a.x+TILE_SIZE/2) - (b.x+TILE_SIZE/2))[0] || null;
+  return G.tiles
+    .filter(t=>!t.judged&&!t.removed&&!t.missTriggered&&t.x+TS/2>JUDGE_X-50)
+    .sort((a,b)=>(a.x+TS/2)-(b.x+TS/2))[0]||null;
 }
-
-function updateTargetDisplay() {
-  // 不顯示提示，讓玩家自己判斷
-  document.getElementById('current-target').textContent = '';
-}
-
-function updateTargetHighlight() {
-  const target = getTarget();
-  state.tiles.forEach(t => {
-    if (t.removed) return;
-    t.el.classList.toggle('target', t === target);
-  });
+function updateTarget() {
+  const tgt=getTarget();
+  G.tiles.forEach(t=>{ if(!t.removed) t.el.classList.toggle('target',t===tgt); });
 }
 
 // ============================================================
-// 鍵盤輸入處理
+// 鍵盤輸入
 // ============================================================
-function handleKey(ch) {
-  if (!state.gameRunning) return;
-
-  if (ch === '⌫') {
-    state.inputBuffer = state.inputBuffer.slice(0,-1);
-    document.getElementById('input-buffer').textContent = state.inputBuffer;
+function onKey(ch) {
+  if(!G.running) return;
+  if(ch==='⌫') {
+    G.buf=G.buf.slice(0,-1);
+    document.getElementById('input-buffer').textContent=G.buf;
     return;
   }
-
-  state.inputBuffer += ch;
-  document.getElementById('input-buffer').textContent = state.inputBuffer;
-
-  // 嘗試比對目標圖案
+  G.buf+=ch;
+  document.getElementById('input-buffer').textContent=G.buf;
   tryMatch();
 }
 
 function tryMatch() {
-  const target = getTarget();
-  if (!target) {
-    clearBuffer();
+  const tgt=getTarget();
+  if(!tgt) { clearBuf(); return; }
+
+  const buf=G.buf;
+  const accepted=getAccepted(tgt.kana);
+
+  // 完全匹配 → 成功，自動清除
+  if(accepted.some(r=>buf===r)) {
+    clearBuf();
+    tgt.judged=true;
+    triggerSuccess(tgt);
     return;
   }
+  // 部分匹配 → 等待繼續輸入
+  if(accepted.some(r=>r.startsWith(buf))) return;
 
-  const buf = state.inputBuffer;
-  const correct = ROMAJI[target.kana];
-  const alts    = ROMAJI_ALT[target.kana] || [correct];
-  const accepted = [...new Set([correct, ...alts])];
-
-  // 完全匹配 → 判定成功，自動清除
-  if (accepted.some(r => buf === r)) {
-    clearBuffer();
-    target.judged = true;
-    triggerSuccess(target);
-    return;
-  }
-
-  // 部分匹配（輸入中）→ 繼續等待
-  if (accepted.some(r => r.startsWith(buf))) return;
-
-  // 不匹配 → 清除後重新從最後一個字母開始嘗試
-  const lastChar = buf.slice(-1);
-  if (accepted.some(r => r.startsWith(lastChar))) {
-    state.inputBuffer = lastChar;
-  } else {
-    state.inputBuffer = '';
-  }
-  document.getElementById('input-buffer').textContent = state.inputBuffer;
+  // 不匹配 → 清除，用最後一個字母重試
+  const last=buf.slice(-1);
+  G.buf=accepted.some(r=>r.startsWith(last)) ? last : '';
+  document.getElementById('input-buffer').textContent=G.buf;
 }
 
-function clearBuffer() {
-  state.inputBuffer = '';
-  document.getElementById('input-buffer').textContent = '';
+function clearBuf() {
+  G.buf='';
+  document.getElementById('input-buffer').textContent='';
 }
 
-// 實體鍵盤也支援（電腦端）
-document.addEventListener('keydown', e => {
-  if (!state.gameRunning) return;
-  if (e.key === 'Backspace') { handleKey('⌫'); return; }
-  if (/^[a-zA-Z]$/.test(e.key)) handleKey(e.key.toLowerCase());
+// 電腦實體鍵盤
+document.addEventListener('keydown',e=>{
+  if(!G.running) return;
+  if(e.key==='Backspace') { onKey('⌫'); return; }
+  if(/^[a-zA-Z]$/.test(e.key)) onKey(e.key.toLowerCase());
 });
 
 // ============================================================
 // 判定成功 / 失敗
 // ============================================================
-function triggerSuccess(tile) {
-  const cx = tile.x+TILE_SIZE/2, cy = tile.y+TILE_SIZE/2;
-  setChar('attack');
-  showBeam(cx, cy);
-  showJudge('OK！', cx, cy-30, 'ok');
-  tile.el.classList.add('success');
-  setTimeout(()=>removeTile(tile), 400);
-  setTimeout(()=>{ if(state.gameRunning) setChar('stand'); document.getElementById('attack-beam').style.display='none'; }, 500);
+function triggerSuccess(t) {
+  const cx=t.x+TS/2, cy=t.y+TS/2;
+  setChar('attack'); showBeam(cx,cy);
+  showJudge('OK！',cx,cy-30,'ok');
+  t.el.classList.add('success');
+  setTimeout(()=>rmTile(t),400);
+  setTimeout(()=>{ if(G.running) setChar('stand'); document.getElementById('attack-beam').style.display='none'; },500);
 }
 
-function triggerMiss(tile) {
-  if (!state.gameRunning) return;
-  tile.el.classList.add('fail');
-  setTimeout(()=>removeTile(tile), 500);
-  state.hearts = Math.max(0, state.hearts-1);
+function triggerMiss(t) {
+  if(!G.running) return;
+  t.el.classList.add('fail');
+  setTimeout(()=>rmTile(t),500);
+  G.hearts=Math.max(0,G.hearts-1);
   renderHearts();
   setChar('attacked');
-  const char = document.getElementById('character');
+  const char=document.getElementById('character');
   char.classList.remove('hit'); void char.offsetWidth; char.classList.add('hit');
-  setTimeout(()=>{ char.classList.remove('hit'); if(state.gameRunning&&state.hearts>0) setChar('stand'); }, 1000);
-  showJudge('MISS', tile.x+TILE_SIZE/2, tile.y+TILE_SIZE/2, 'miss');
-  if (state.hearts<=0) setTimeout(triggerGameOver, 600);
+  setTimeout(()=>{ char.classList.remove('hit'); if(G.running&&G.hearts>0) setChar('stand'); },1000);
+  showJudge('MISS',t.x+TS/2,t.y+TS/2,'miss');
+  if(G.hearts<=0) setTimeout(triggerGameOver,600);
 }
 
-function showBeam(tx, ty) {
-  const b = document.getElementById('attack-beam');
-  const sx=CHAR_X+CHAR_W-10, sy=GAME_H-CHAR_BOTTOM-CHAR_H*0.55;
-  const dx=tx-sx, dy=ty-sy, len=Math.sqrt(dx*dx+dy*dy), ang=Math.atan2(dy,dx)*180/Math.PI;
+function showBeam(tx,ty) {
+  const b=document.getElementById('attack-beam');
+  const sx=CHAR_X+CHAR_W-10, sy=VH-CHAR_BOT-CHAR_H*0.55;
+  const dx=tx-sx,dy=ty-sy,len=Math.sqrt(dx*dx+dy*dy),ang=Math.atan2(dy,dx)*180/Math.PI;
   b.style.cssText=`left:${sx}px;top:${sy-25}px;width:${len}px;height:50px;transform:rotate(${ang}deg);transform-origin:0 50%;display:block;`;
 }
 
@@ -701,59 +656,62 @@ function setChar(s) {
 // 通關 / 失敗
 // ============================================================
 function triggerClear() {
-  if (!state.gameRunning) return;
-  state.gameRunning=false;
-  stopSpawning(); clearInterval(state.gameTimer);
+  if(!G.running) return;
+  G.running=false; stopGame(); 
   setChar('clear');
   document.getElementById('character').classList.add('clear');
-  document.getElementById('clear-msg-wrap').classList.add('show');
+  document.getElementById('clear-wrap').classList.add('show');
 }
-
 function triggerGameOver() {
-  if (!state.gameRunning) return;
-  state.gameRunning=false;
-  stopSpawning(); clearInterval(state.gameTimer);
+  if(!G.running) return;
+  G.running=false; stopGame();
   setChar('failed');
-  document.getElementById('over-msg-wrap').classList.add('show');
+  document.getElementById('over-wrap').classList.add('show');
 }
 
 // ============================================================
-// HUD / 工具
+// HUD
 // ============================================================
 function renderHearts() {
   const c=document.getElementById('hearts-container'); c.innerHTML='';
-  for(let i=0;i<6;i++){const h=document.createElement('span');h.className='heart'+(i>=state.hearts?' lost':'');h.textContent='❤';c.appendChild(h);}
+  const s=VH/600;
+  for(let i=0;i<6;i++){
+    const h=document.createElement('span'); h.className='heart'+(i>=G.hearts?' lost':'');
+    h.textContent='❤'; h.style.fontSize=Math.round(22*s)+'px';
+    c.appendChild(h);
+  }
 }
 function updateTimer() {
   const el=document.getElementById('timer-display');
-  const m=Math.floor(state.timeLeft/60),s=state.timeLeft%60;
-  el.textContent=m+':'+String(s).padStart(2,'0');
-  el.classList.toggle('urgent',state.timeLeft<=30);
+  el.textContent=Math.floor(G.timeLeft/60)+':'+String(G.timeLeft%60).padStart(2,'0');
+  el.classList.toggle('urgent',G.timeLeft<=30);
 }
-function showJudge(text,x,y,type){
+function showJudge(text,x,y,type) {
   const el=document.createElement('div'); el.className='judge-popup '+type; el.textContent=text;
   el.style.cssText=`left:${x-20}px;top:${y-20}px;font-size:24px;`;
   document.getElementById('game-left').appendChild(el);
   setTimeout(()=>el.remove(),800);
 }
-function stopSpawning(){ clearTimeout(state.spawnTimer); }
-function stopGame(){
-  state.gameRunning=false; stopSpawning(); clearInterval(state.gameTimer);
-  state.tiles.forEach(t=>{try{t.el.remove()}catch(e){}});
-  state.tiles=[];
+
+// ============================================================
+// 工具
+// ============================================================
+function stopGame() {
+  clearTimeout(G.spawnTimer); clearInterval(G.gameTimer);
+  G.tiles.forEach(t=>{ try{t.el.remove()}catch(e){} });
+  G.tiles=[];
   document.querySelectorAll('.kana-tile,.judge-popup').forEach(t=>t.remove());
   document.getElementById('attack-beam').style.display='none';
-  state.inputBuffer=''; document.getElementById('input-buffer').textContent='';
-  document.getElementById('current-target').textContent='　';
+  clearBuf();
 }
-function hideAllOverlays(){
-  ['start-msg-wrap','clear-msg-wrap','over-msg-wrap'].forEach(id=>{document.getElementById(id).classList.remove('show');});
+function hideAllOverlays() {
+  ['start-wrap','clear-wrap','over-wrap'].forEach(id=>document.getElementById(id).classList.remove('show'));
 }
 
 // ============================================================
 // 啟動
 // ============================================================
-initTitle();
+init();
 </script>
 </body>
 </html>
