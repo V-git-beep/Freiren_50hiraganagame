@@ -624,54 +624,55 @@ document.addEventListener('keydown',e=>{
 // ============================================================
 // 判定成功 / 失敗
 // ============================================================
-// 角色狀態管理：防止快速連擊時圖片互相覆蓋
+// 角色圖片切換（簡單版，每次直接設定，用 timer 還原）
 let charTimer = null;
-let charLocked = false; // true = 正在播放動畫，不可覆蓋
 
-function setCharTemp(state, duration, callback) {
-  // 播放臨時狀態圖片，duration ms 後還原
-  if (charLocked) return; // 若正在播放中，忽略新請求
-  charLocked = true;
+function setCharFor(state, ms) {
+  // 清除舊 timer，立刻切換圖片，ms 後還原待機
   clearTimeout(charTimer);
   const img = document.getElementById('char-img');
   const map = {stand:'frierenstand',attack:'frierenattack',attacked:'frierenattacked',clear:'frierenclear',failed:'frierenfailed'};
-  img.src = 'images/' + (map[state] || 'frierenstand') + '.png';
-  charTimer = setTimeout(() => {
-    charLocked = false;
-    if (callback) callback();
-    else if (G.running) img.src = 'images/frierenstand.png';
-  }, duration);
+  img.src = 'images/' + (map[state]||'frierenstand') + '.png';
+  if (ms > 0) {
+    charTimer = setTimeout(() => {
+      if (G.running) img.src = 'images/frierenstand.png';
+    }, ms);
+  }
 }
 
 function triggerSuccess(t) {
-  const cx=t.x+TS/2, cy=t.y+TS/2;
-  showBeam(cx,cy);
-  showJudge('OK！',cx,cy-30,'ok');
+  const cx = t.x+TS/2, cy = t.y+TS/2;
+
+  // 攻擊圖 + 光束，500ms 後回待機
+  setCharFor('attack', 500);
+  showBeam(cx, cy);
+  showJudge('OK！', cx, cy-30, 'ok');
   t.el.classList.add('success');
 
-  // 播放攻擊圖 600ms，期間不可被其他狀態覆蓋
-  setCharTemp('attack', 600, () => {
-    document.getElementById('attack-beam').style.display='none';
-  });
-
-  setTimeout(()=>rmTile(t), 400);
+  setTimeout(() => {
+    rmTile(t);
+    document.getElementById('attack-beam').style.display = 'none';
+  }, 400);
 }
 
 function triggerMiss(t) {
-  if(!G.running) return;
+  if (!G.running) return;
   t.el.classList.add('fail');
-  setTimeout(()=>rmTile(t),500);
-  G.hearts=Math.max(0,G.hearts-1);
+  setTimeout(() => rmTile(t), 500);
+
+  G.hearts = Math.max(0, G.hearts-1);
   renderHearts();
 
-  // 播放受擊圖 1000ms，同時觸發閃爍動畫
-  setCharTemp('attacked', 1000);
-  const char=document.getElementById('character');
-  char.classList.remove('hit'); void char.offsetWidth; char.classList.add('hit');
-  setTimeout(()=>{ char.classList.remove('hit'); },1000);
+  // 受擊圖 800ms 後回待機，同時閃爍動畫
+  setCharFor('attacked', 800);
+  const char = document.getElementById('character');
+  char.classList.remove('hit');
+  void char.offsetWidth;
+  char.classList.add('hit');
+  setTimeout(() => { char.classList.remove('hit'); }, 800);
 
-  showJudge('MISS',t.x+TS/2,t.y+TS/2,'miss');
-  if(G.hearts<=0) setTimeout(triggerGameOver,600);
+  showJudge('MISS', t.x+TS/2, t.y+TS/2, 'miss');
+  if (G.hearts <= 0) setTimeout(triggerGameOver, 600);
 }
 
 function showBeam(tx,ty) {
@@ -695,7 +696,6 @@ function triggerClear() {
   clearInterval(G.gameTimer);
   clearTimeout(G.spawnTimer);
   clearTimeout(charTimer);
-  charLocked = false;
   setChar('clear');
   document.getElementById('character').classList.add('clear');
   document.getElementById('clear-wrap').classList.add('show');
@@ -707,7 +707,6 @@ function triggerGameOver() {
   clearInterval(G.gameTimer);
   clearTimeout(G.spawnTimer);
   clearTimeout(charTimer);
-  charLocked = false;
   setChar('failed');
   document.getElementById('over-wrap').classList.add('show');
   G.tiles.forEach(t=>{ t.judged=true; });
