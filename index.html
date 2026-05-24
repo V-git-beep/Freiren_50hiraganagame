@@ -453,7 +453,7 @@ const ALL_ASSETS = [
   'images/frierenclear.webp',
   'images/frierenfailed.webp',
   'images/attackeffect.webp',
-  'images/50onframe.webp',
+  'images/50onframe.png',
   'audio/attack.mp3',
   'audio/attacked.mp3',
   'audio/clear.mp3',
@@ -628,7 +628,7 @@ function spawnAt(startX) {
   const el=document.createElement('div');
   el.className='kana-tile';
   el.style.cssText=`width:${TS}px;height:${TS}px;left:${startX}px;top:${y}px;`;
-  const fi=document.createElement('img'); fi.className='frame-img'; fi.src='images/50onframe.webp';
+  const fi=document.createElement('img'); fi.className='frame-img'; fi.src='images/50onframe.png';
   const kt=document.createElement('span'); kt.className='kana-text'; kt.textContent=kana;
   kt.style.fontSize=Math.round(TS*0.47)+'px';
   el.appendChild(fi); el.appendChild(kt);
