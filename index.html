@@ -456,8 +456,10 @@ function beginGameplay() {
     updateTimer();
   }, 1000);
 
-  // 立刻生成第一個圖案，之後按 interval
-  spawnTile();
+  // 立刻生成前3個圖案（分散在螢幕右半段），讓遊戲馬上有東西
+  spawnTileAt(BASE_W - 50);          // 幾乎在螢幕右緣
+  spawnTileAt(BASE_W + 200);         // 稍微在螢幕外
+  spawnTileAt(BASE_W + 450);         // 再遠一點
   scheduleNextSpawn();
 }
 
@@ -471,29 +473,31 @@ function scheduleNextSpawn() {
   }, diff.interval + jitter);
 }
 
-function spawnTile() {
+function spawnTile() { spawnTileAt(TILE_SPAWN_X); }
+
+function spawnTileAt(startX) {
   if (!state.gameRunning || state.spawnIndex >= state.spawnQueue.length) return;
   const kana = state.spawnQueue[state.spawnIndex++];
 
-  // 防重疊：Y 與右半區圖案距離至少 TILE_SIZE + 30
+  // 防重疊：Y 與已存在圖案距離至少 TILE_SIZE + 30
   let y, tries = 0;
   do {
     y = TILE_MIN_Y + Math.random() * (TILE_MAX_Y - TILE_MIN_Y);
     tries++;
-    const overlap = state.tiles.some(t => !t.removed && t.x > BASE_W * 0.4 && Math.abs(t.y - y) < TILE_SIZE + 30);
+    const overlap = state.tiles.some(t => !t.removed && Math.abs(t.y - y) < TILE_SIZE + 30);
     if (!overlap || tries > 15) break;
   } while (true);
 
   const el = document.createElement('div');
   el.className = 'kana-tile';
-  el.style.cssText = `width:${TILE_SIZE}px;height:${TILE_SIZE}px;left:${TILE_SPAWN_X}px;top:${y}px;`;
+  el.style.cssText = `width:${TILE_SIZE}px;height:${TILE_SIZE}px;left:${startX}px;top:${y}px;`;
 
   const fi = document.createElement('img'); fi.className = 'frame-img'; fi.src = 'images/50onframe.png';
   const kt = document.createElement('span'); kt.className = 'kana-text'; kt.textContent = kana;
   el.appendChild(fi); el.appendChild(kt);
   document.getElementById('game-screen').appendChild(el);
 
-  state.tiles.push({ el, x: TILE_SPAWN_X, y, kana, judged: false, missTriggered: false, removed: false });
+  state.tiles.push({ el, x: startX, y, kana, judged: false, missTriggered: false, removed: false });
 }
 
 // ============================================================
