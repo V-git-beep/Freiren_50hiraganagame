@@ -117,18 +117,45 @@
   @keyframes timerPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
   #difficulty-badge { font-family:'Noto Serif JP',serif; font-weight:700; color:#d8b4fe; letter-spacing:2px; text-shadow:0 0 8px rgba(167,139,250,0.6),1px 1px 2px #000; text-align:right; }
 
-  /* 語音辨識狀態 + 目前辨識到的字 */
+  /* 按住說話區域 */
   #voice-indicator {
     position:absolute; bottom:0; left:0; right:0; z-index:40;
-    display:flex; align-items:center; justify-content:center; gap:16px; padding:8px;
-    background:linear-gradient(to top,rgba(0,0,0,0.5),transparent); pointer-events:none;
+    display:flex; align-items:center; justify-content:center; gap:16px;
+    padding:10px 16px;
+    background:linear-gradient(to top,rgba(0,0,0,0.6),transparent);
+    pointer-events:auto;
   }
-  #voice-status { color:rgba(255,255,255,0.7); letter-spacing:2px; font-size:13px; }
-  #voice-status.listening  { color:#86efac; animation:voicePulse 1.5s ease infinite; }
+  #hold-btn {
+    padding:10px 36px;
+    background:rgba(139,92,246,0.5);
+    border:2px solid rgba(196,181,253,0.8);
+    border-radius:50px;
+    color:#fff;
+    font-family:'Noto Serif JP',serif;
+    font-weight:700;
+    font-size:16px;
+    letter-spacing:3px;
+    cursor:pointer;
+    user-select:none;
+    -webkit-user-select:none;
+    transition:background 0.15s, transform 0.1s;
+    touch-action:none;
+    text-shadow:1px 1px 2px #000;
+  }
+  #hold-btn.pressing {
+    background:rgba(220,38,38,0.75);
+    border-color:#fca5a5;
+    transform:scale(0.96);
+    animation:holdPulse 0.6s ease infinite;
+  }
+  @keyframes holdPulse { 0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,0.5)} 50%{box-shadow:0 0 0 10px rgba(220,38,38,0)} }
+  #voice-heard {
+    color:#fde68a; font-size:22px; font-weight:900; min-width:50px; text-align:center;
+    text-shadow:0 0 10px #fbbf24; letter-spacing:2px;
+  }
+  #voice-status { color:rgba(255,255,255,0.6); letter-spacing:1px; font-size:12px; }
+  #voice-status.listening  { color:#86efac; }
   #voice-status.recognized { color:#fde68a; }
-  #voice-heard { color:#fde68a; font-size:22px; font-weight:900; min-width:40px; text-align:center;
-    text-shadow:0 0 10px #fbbf24; letter-spacing:2px; }
-  @keyframes voicePulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
 
   .overlay-message {
     position:absolute; inset:0; z-index:50; display:flex; flex-direction:column;
@@ -203,7 +230,8 @@
         <div id="difficulty-badge"></div>
       </div>
       <div id="voice-indicator">
-        <span id="voice-status">🎤 マイクを初期化中...</span>
+        <span id="voice-status"></span>
+        <button id="hold-btn">🎤 押して話す</button>
         <span id="voice-heard"></span>
       </div>
       <div id="start-message"    class="overlay-message"><div class="msg-text" id="start-msg-text"></div></div>
@@ -275,11 +303,8 @@ const DIFFICULTY = {
     kana: ['あ','い','う','え','お','か','き','く','け','こ','さ','し','す','せ','そ','た','ち','つ','て','と'],
     totalTiles: 40,
     speed: 60,
-    interval: 3200,
-    // missPixels：圖案中心超過判定線「左方」這個距離才算MISS
-    // 60px/秒 × 1.5秒延遲 = 90px，設120px留點餘裕
+    interval: 2200,   // 第一個立刻出現，之後每2.2秒一個
     missPixels: 120,
-    // judgePixels：語音比對時接受的範圍（判定線左右）
     judgePixels: 350,
   },
   beginner2: {
@@ -287,7 +312,7 @@ const DIFFICULTY = {
     kana: ['な','に','ぬ','ね','の','は','ひ','ふ','へ','ほ','ま','み','む','め','も','や','ゆ','よ','ら','り','る','れ','ろ','わ','を'],
     totalTiles: 40,
     speed: 65,
-    interval: 3200,
+    interval: 2200,
     missPixels: 120,
     judgePixels: 350,
   },
@@ -296,7 +321,7 @@ const DIFFICULTY = {
     kana: ['あ','い','う','え','お','か','き','く','け','こ','さ','し','す','せ','そ','た','ち','つ','て','と','な','に','ぬ','ね','の','は','ひ','ふ','へ','ほ','ま','み','む','め','も','や','ゆ','よ','ら','り','る','れ','ろ','わ','を'],
     totalTiles: 40,
     speed: 80,
-    interval: 2800,
+    interval: 1800,
     missPixels: 100,
     judgePixels: 300,
   }
@@ -491,8 +516,8 @@ function scheduleSpawn(firstCall) {
   if (!state.gameRunning || state.spawnIndex >= state.spawnQueue.length) return;
   spawnTile();
   const diff   = DIFFICULTY[state.difficulty];
-  const jitter = (Math.random() * 600) - 300;
-  // 第一個圖案立刻生成，之後才按 interval 間隔
+  const jitter = (Math.random() * 400) - 200;
+  // 第一個立刻出現，第二個800ms後，之後按interval
   const delay = firstCall ? 0 : diff.interval + jitter;
   state.spawnTimer = setTimeout(() => scheduleSpawn(false), delay);
 }
@@ -500,7 +525,18 @@ function scheduleSpawn(firstCall) {
 function spawnTile() {
   if (!state.gameRunning || state.spawnIndex >= state.spawnQueue.length) return;
   const kana = state.spawnQueue[state.spawnIndex++];
-  const y    = TILE_MIN_Y + Math.random() * (TILE_MAX_Y - TILE_MIN_Y);
+  // 防止Y軸重疊：新圖案與上一個Y距離至少 TILE_SIZE + 20px
+  let y, attempts = 0;
+  do {
+    y = TILE_MIN_Y + Math.random() * (TILE_MAX_Y - TILE_MIN_Y);
+    attempts++;
+    const tooClose = state.tiles.some(t => {
+      // 只檢查還在螢幕右半段（剛生成）的圖案
+      if (t.removed || t.x < BASE_W * 0.5) return false;
+      return Math.abs(t.y - y) < TILE_SIZE + 20;
+    });
+    if (!tooClose || attempts > 10) break;
+  } while (true);
 
   const tile     = document.createElement('div');
   tile.className = 'kana-tile';
@@ -573,63 +609,121 @@ function removeTile(tileObj) {
 //   - 不依賴 atLine / 毫秒窗口，改為純像素距離判斷
 //   - 只要圖案中心在 JUDGE_X ± judgePixels 範圍內即可判定
 // ============================================================
+// ============================================================
+// 按住說話模式
+// 玩家按住按鈕 → 開始錄音 → 放開 → 停止錄音並判定
+// ============================================================
 function initSpeech() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SR) { setVoiceStatus('', '⚠️ このブラウザは音声認識に対応していません'); return; }
-  if (state.recognition) { try { state.recognition.stop(); } catch(e){} }
-
-  const rec = new SR();
-  rec.lang = 'ja-JP';
-  rec.continuous = true;
-  rec.interimResults = false; // 只接收最終確定結果，Android Chrome 更穩定
-  rec.maxAlternatives = 10;   // 多收幾個候選，提高命中率
-  state.recognition = rec;
-
-  rec.onstart  = () => setVoiceStatus('listening', '🎤 聴いています...');
-
-  rec.onresult = (event) => {
-    // 收集所有候選詞（含 interim）
-    const transcripts = [];
-    for (let i = event.resultIndex; i < event.results.length; i++) {
-      for (let j = 0; j < event.results[i].length; j++) {
-        const t = event.results[i][j].transcript.trim();
-        if (t) transcripts.push(t);
-      }
-    }
-    if (transcripts.length > 0) {
-      // 顯示辨識到的字
-      document.getElementById('voice-heard').textContent = transcripts[0];
-      setTimeout(() => { document.getElementById('voice-heard').textContent = ''; }, 800);
-      handleVoiceInput(transcripts);
-    }
-  };
-
-  rec.onerror = (e) => {
-    // no-speech 和 aborted 都要重啟，不能忽略
-    // Android Chrome 常常因 no-speech 靜默停止
-    if (e.error === 'aborted') return;
-    // 顯示錯誤方便診斷（no-speech 不顯示，太頻繁）
-    if (e.error !== 'no-speech') {
-      setVoiceStatus('', '⚠️ ' + e.error + ' → 再起動中...');
-    }
-    setTimeout(() => { if (state.gameRunning) restartSpeech(); }, 300);
-  };
-  rec.onend = () => { if (state.gameRunning) setTimeout(restartSpeech, 100); };
-  rec.start();
-}
-
-function restartSpeech() {
-  if (!state.gameRunning || !state.recognition) return;
-  try {
-    state.recognition.start();
-  } catch(e) {
-    // InvalidStateError = 已在運作中，忽略即可
+  if (!SR) {
+    setVoiceStatus('', '⚠️ 音声認識非対応');
+    document.getElementById('hold-btn').textContent = '⚠️ 非対応';
+    return;
   }
+  if (state.recognition) { try { state.recognition.abort(); } catch(e){} }
+
+  // 建立辨識器（單次模式，按一次說一次）
+  function createRec() {
+    const rec = new SR();
+    rec.lang = 'ja-JP';
+    rec.continuous = false;    // 單次模式：說完就回傳
+    rec.interimResults = true; // 啟用中途結果，加快回應
+    rec.maxAlternatives = 10;
+    return rec;
+  }
+
+  state.recognition = createRec();
+  state.isListening = false;
+  state.pendingTranscripts = []; // 按住期間收集到的結果
+
+  // ── 按住按鈕：開始錄音 ──────────────────────────
+  function onPressStart(e) {
+    e.preventDefault();
+    if (!state.gameRunning || state.isListening) return;
+
+    state.isListening = true;
+    state.pendingTranscripts = [];
+
+    const btn = document.getElementById('hold-btn');
+    btn.classList.add('pressing');
+    btn.textContent = '🔴 話してください';
+    document.getElementById('voice-heard').textContent = '';
+
+    // 每次按住都建立新的辨識器
+    state.recognition = createRec();
+
+    state.recognition.onresult = (event) => {
+      const transcripts = [];
+      for (let i = 0; i < event.results.length; i++) {
+        for (let j = 0; j < event.results[i].length; j++) {
+          const t = event.results[i][j].transcript.trim();
+          if (t) transcripts.push(t);
+        }
+      }
+      if (transcripts.length > 0) {
+        // 即時顯示辨識中的字
+        document.getElementById('voice-heard').textContent = transcripts[0];
+        // 把結果存起來，放開按鈕時再判定
+        state.pendingTranscripts = transcripts;
+      }
+    };
+
+    state.recognition.onerror = (e) => {
+      if (e.error !== 'aborted') {
+        setVoiceStatus('', '⚠️ ' + e.error);
+      }
+    };
+
+    state.recognition.onend = () => {
+      // 辨識結束後自動判定（不管是放開觸發還是逾時）
+      if (state.pendingTranscripts.length > 0) {
+        handleVoiceInput(state.pendingTranscripts);
+      }
+      state.isListening = false;
+      resetBtn();
+    };
+
+    try {
+      state.recognition.start();
+    } catch(e) {
+      state.isListening = false;
+      resetBtn();
+    }
+  }
+
+  // ── 放開按鈕：停止錄音，觸發判定 ───────────────────
+  function onPressEnd(e) {
+    e.preventDefault();
+    if (!state.isListening) return;
+    try { state.recognition.stop(); } catch(err) {}
+    // onend 會自動觸發判定
+  }
+
+  function resetBtn() {
+    const btn = document.getElementById('hold-btn');
+    btn.classList.remove('pressing');
+    btn.textContent = '🎤 押して話す';
+    setTimeout(() => {
+      document.getElementById('voice-heard').textContent = '';
+    }, 1000);
+  }
+
+  // 綁定事件（同時支援 touch 和 mouse）
+  const btn = document.getElementById('hold-btn');
+  btn.addEventListener('touchstart',  onPressStart, { passive:false });
+  btn.addEventListener('touchend',    onPressEnd,   { passive:false });
+  btn.addEventListener('touchcancel', onPressEnd,   { passive:false });
+  btn.addEventListener('mousedown',   onPressStart);
+  btn.addEventListener('mouseup',     onPressEnd);
+  btn.addEventListener('mouseleave',  onPressEnd);
+
+  setVoiceStatus('', '');
 }
+
+function restartSpeech() { /* 按住模式不需要自動重啟 */ }
 
 function handleVoiceInput(transcripts) {
   if (!state.gameRunning) return;
-
   const jp = DIFFICULTY[state.difficulty].judgePixels;
 
   // 找出所有在判定窗口內（未判定）的圖案，按距離判定線排序
@@ -637,38 +731,41 @@ function handleVoiceInput(transcripts) {
     .filter(tile => {
       if (tile.judged || tile.removed || tile.missTriggered) return false;
       const cx = tile.x + TILE_SIZE / 2;
-      // 圖案中心在判定線的 judgePixels 範圍內都接受
       return Math.abs(cx - JUDGE_X) < jp;
     })
     .sort((a, b) => {
-      // 優先選最靠近判定線的圖案
       const da = Math.abs((a.x + TILE_SIZE/2) - JUDGE_X);
       const db = Math.abs((b.x + TILE_SIZE/2) - JUDGE_X);
       return da - db;
     });
 
-  if (candidates.length === 0) return;
+  if (candidates.length === 0) {
+    setVoiceStatus('', '');
+    return;
+  }
 
-  // 嘗試每個候選詞去比對最近的圖案
+  let matched = false;
   for (const tile of candidates) {
     const keywords = KANA_DATA[tile.kana] || [];
     let hit = false;
-
     for (const transcript of transcripts) {
       if (keywords.some(kw => transcript.includes(kw))) { hit = true; break; }
-      // を / お 同音
       if (tile.kana === 'を' || tile.kana === 'お') {
-        if (transcript.includes('お') || transcript.includes('を') || transcript.includes('o')) { hit = true; break; }
+        if (transcript.includes('お') || transcript.includes('を')) { hit = true; break; }
       }
     }
-
     if (hit) {
       tile.judged = true;
+      matched = true;
       setVoiceStatus('recognized', '✨ ' + transcripts[0]);
-      setTimeout(() => { if (state.gameRunning) setVoiceStatus('listening', '🎤 聴いています...'); }, 600);
+      setTimeout(() => { setVoiceStatus('', ''); }, 800);
       triggerSuccess(tile);
-      break; // 一次只消一個
+      break;
     }
+  }
+
+  if (!matched) {
+    setVoiceStatus('', '');
   }
 }
 
