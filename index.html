@@ -70,6 +70,7 @@ body { background:#000; overflow:hidden; width:100vw; height:100vh; font-family:
 #character.clear { animation:clearBounce 2s ease; }
 @keyframes hitFlash   { 0%,100%{opacity:1} 25%,75%{opacity:0.2;filter:drop-shadow(0 0 14px red)} }
 @keyframes clearBounce{ 0%,100%{transform:translateY(0)} 25%{transform:translateY(-28px)} 50%{transform:translateY(-8px)} 75%{transform:translateY(-18px)} }
+.bounce { animation:clearBounce 0.6s ease 2; }
 
 /* 光束 */
 #attack-beam { position:absolute; z-index:25; pointer-events:none; display:none; transform-origin:left center; }
@@ -192,7 +193,13 @@ body { background:#000; overflow:hidden; width:100vw; height:100vh; font-family:
       <!-- 左：遊戲主區 -->
       <div id="game-left">
         <div id="judge-line"></div>
-        <div id="character"><img id="char-img" src="images/frierenstand.png" alt=""></div>
+        <div id="character">
+        <img id="char-stand"    src="images/frierenstand.png"    alt="" style="display:block;">
+        <img id="char-attack"   src="images/frierenattack.png"   alt="" style="display:none;position:absolute;top:0;left:0;">
+        <img id="char-attacked" src="images/frierenattacked.png" alt="" style="display:none;position:absolute;top:0;left:0;">
+        <img id="char-clear"    src="images/frierenclear.png"    alt="" style="display:none;position:absolute;top:0;left:0;">
+        <img id="char-failed"   src="images/frierenfailed.png"   alt="" style="display:none;position:absolute;top:0;left:0;">
+      </div>
         <div id="attack-beam"><img src="images/attackeffect.png" alt=""></div>
         <div id="hud">
           <div id="hearts-container"></div>
@@ -320,11 +327,14 @@ function resize() {
   const char = document.getElementById('character');
   char.style.left   = CHAR_X+'px';
   char.style.bottom = CHAR_BOT+'px';
-  const ci = document.getElementById('char-img');
-  ci.style.width  = CHAR_W+'px';
-  ci.style.height = CHAR_H+'px';
-  ci.style.objectFit = 'contain';
-  ci.style.objectPosition = 'bottom center';
+  CHAR_IDS.forEach(s => {
+    const ci = document.getElementById('char-'+s);
+    if (!ci) return;
+    ci.style.width  = CHAR_W+'px';
+    ci.style.height = CHAR_H+'px';
+    ci.style.objectFit = 'contain';
+    ci.style.objectPosition = 'bottom center';
+  });
 
   // HUD 字型
   const s = VH/600;
@@ -453,7 +463,7 @@ function startGame(diffKey) {
   document.querySelectorAll('.kana-tile,.judge-popup').forEach(t=>t.remove());
   document.getElementById('attack-beam').style.display='none';
   renderHearts(); updateTimer();
-  setChar('stand');
+  showChar('stand');
   showGame();
   showStartMsg();
 }
@@ -624,18 +634,24 @@ document.addEventListener('keydown',e=>{
 // ============================================================
 // 判定成功 / 失敗
 // ============================================================
-// 角色圖片切換（簡單版，每次直接設定，用 timer 還原）
+// 角色圖片切換：用 display 控制，不靠 src 切換
 let charTimer = null;
+const CHAR_IDS = ['stand','attack','attacked','clear','failed'];
+
+function showChar(state) {
+  // 全部隱藏，只顯示指定的那張
+  CHAR_IDS.forEach(s => {
+    const el = document.getElementById('char-'+s);
+    if (el) el.style.display = (s === state) ? 'block' : 'none';
+  });
+}
 
 function setCharFor(state, ms) {
-  // 清除舊 timer，立刻切換圖片，ms 後還原待機
   clearTimeout(charTimer);
-  const img = document.getElementById('char-img');
-  const map = {stand:'frierenstand',attack:'frierenattack',attacked:'frierenattacked',clear:'frierenclear',failed:'frierenfailed'};
-  img.src = 'images/' + (map[state]||'frierenstand') + '.png';
+  showChar(state);
   if (ms > 0) {
     charTimer = setTimeout(() => {
-      if (G.running) img.src = 'images/frierenstand.png';
+      if (G.running) showChar('stand');
     }, ms);
   }
 }
@@ -679,12 +695,11 @@ function showBeam(tx,ty) {
   const b=document.getElementById('attack-beam');
   const sx=CHAR_X+CHAR_W-10, sy=VH-CHAR_BOT-CHAR_H*0.55;
   const dx=tx-sx,dy=ty-sy,len=Math.sqrt(dx*dx+dy*dy),ang=Math.atan2(dy,dx)*180/Math.PI;
-  b.style.cssText=`left:${sx}px;top:${sy-75}px;width:${len}px;height:150px;transform:rotate(${ang}deg);transform-origin:0 50%;display:block;`;
+  b.style.cssText=`left:${sx}px;top:${sy-100}px;width:${len}px;height:200px;transform:rotate(${ang}deg);transform-origin:0 50%;display:block;`;
 }
 
 function setChar(s) {
-  const m={stand:'frierenstand',attack:'frierenattack',attacked:'frierenattacked',clear:'frierenclear',failed:'frierenfailed'};
-  document.getElementById('char-img').src=`images/${m[s]||'frierenstand'}.png`;
+  showChar(s);
 }
 
 // ============================================================
@@ -697,7 +712,7 @@ function triggerClear() {
   clearTimeout(G.spawnTimer);
   clearTimeout(charTimer);
   setChar('clear');
-  document.getElementById('character').classList.add('clear');
+  document.getElementById('char-clear').classList.add('bounce');
   document.getElementById('clear-wrap').classList.add('show');
   G.tiles.forEach(t=>{ t.judged=true; });
 }
