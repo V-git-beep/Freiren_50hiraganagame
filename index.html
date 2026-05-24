@@ -65,7 +65,7 @@ body { background:#000; overflow:hidden; width:100vw; height:100vh; font-family:
 
 /* 角色 */
 #character { position:absolute; z-index:30; pointer-events:none; }
-#character img { display:block; filter:drop-shadow(0 4px 8px rgba(0,0,0,0.5)); }
+#character img { display:block; mix-blend-mode:screen; }
 #character.hit   { animation:hitFlash 1s ease; }
 #character.clear { animation:clearBounce 2s ease; }
 @keyframes hitFlash   { 0%,100%{opacity:1} 25%,75%{opacity:0.2;filter:drop-shadow(0 0 14px red)} }
@@ -233,7 +233,7 @@ body { background:#000; overflow:hidden; width:100vw; height:100vh; font-family:
       <div id="game-left">
         <div id="judge-line"></div>
         <div id="character">
-        <img id="char-img" src="images/frierenstand.webp" alt="">
+        <img id="char-img" src="images/frierenstand.png" alt="">
       </div>
         <div id="attack-beam"><img src="images/attackeffect.png" alt=""></div>
         <div id="hud">
@@ -447,11 +447,11 @@ function flashKey(btn) {
 const ALL_ASSETS = [
   'images/gamebeginingbackground.webp',
   'images/gamebeginbackground.webp',
-  'images/frierenstand.webp',
-  'images/frierenattack.webp',
-  'images/frierenattacked.webp',
-  'images/frierenclear.webp',
-  'images/frierenfailed.webp',
+  'images/frierenstand.png',
+  'images/frierenattack.png',
+  'images/frierenattacked.png',
+  'images/frierenclear.png',
+  'images/frierenfailed.png',
   'images/attackeffect.png',
   'images/50onframe.png',
   'audio/attack.mp3',
