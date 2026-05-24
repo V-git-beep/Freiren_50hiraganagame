@@ -8,425 +8,181 @@
   @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700;900&family=Cinzel+Decorative:wght@700&display=swap');
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background:#000; overflow:hidden; width:100vw; height:100vh; font-family:'Noto Serif JP',serif; }
 
-  body {
-    background: #000;
-    overflow: hidden;
-    width: 100vw;
-    height: 100vh;
-    font-family: 'Noto Serif JP', serif;
-  }
-
-  /* ===== 橫向鎖定提示 ===== */
   #rotate-notice {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: #0a0a1a;
-    z-index: 9999;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    gap: 20px;
+    display:none; position:fixed; inset:0; background:#0a0a1a; z-index:9999;
+    flex-direction:column; align-items:center; justify-content:center; color:#fff; gap:20px;
   }
-  #rotate-notice .rotate-icon {
-    font-size: 60px;
-    animation: rotateHint 2s ease-in-out infinite;
-  }
-  #rotate-notice p { font-size: 18px; color: #aaa; }
-  @keyframes rotateHint {
-    0%,100% { transform: rotate(0deg); }
-    50% { transform: rotate(90deg); }
-  }
+  #rotate-notice .rotate-icon { font-size:60px; animation:rotateHint 2s ease-in-out infinite; }
+  #rotate-notice p { font-size:18px; color:#aaa; }
+  @keyframes rotateHint { 0%,100%{transform:rotate(0deg)} 50%{transform:rotate(90deg)} }
 
-  /* ===== 遊戲容器：填滿整個螢幕 ===== */
   #game-wrapper {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #000;
+    position:fixed; top:0; left:0; width:100%; height:100%;
+    display:flex; align-items:center; justify-content:center; background:#000;
   }
+  #game-canvas { position:relative; overflow:hidden; background:#000; }
 
-  #game-canvas {
-    position: relative;
-    overflow: hidden;
-    background: #000;
-    /* 寬高由 JS 設定，transform-origin 置中 */
-  }
+  .screen { position:absolute; inset:0; display:none; }
+  .screen.active { display:block; }
 
-  /* ===== 畫面層 ===== */
-  .screen {
-    position: absolute;
-    inset: 0;
-    display: none;
-  }
-  .screen.active { display: block; }
-
-  /* ===== 開始畫面 ===== */
-  #title-screen {
-    background-size: cover;
-    background-position: center;
-  }
+  #title-screen { background-size:cover; background-position:center; }
   #title-screen .overlay {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.6) 100%);
+    position:absolute; inset:0;
+    background:linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.6) 100%);
   }
   #title-screen .content {
-    position: relative;
-    z-index: 2;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    gap: 0;
+    position:relative; z-index:2; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; height:100%; gap:0;
   }
-  .game-title {
-    font-family: 'Cinzel Decorative', serif;
-    color: #fff;
-    text-shadow: 0 0 30px #a78bfa, 0 0 60px #7c3aed, 2px 2px 0 #000;
-    line-height: 1.2;
-    text-align: center;
-    margin-bottom: 8px;
-  }
+  .game-title { font-family:'Cinzel Decorative',serif; color:#fff; line-height:1.2; text-align:center; margin-bottom:8px; }
   .game-title .jp {
-    font-family: 'Noto Serif JP', serif;
-    font-weight: 900;
-    display: block;
-    text-shadow: 0 0 20px #c4b5fd, 0 0 40px #7c3aed, 2px 2px 0 #000;
+    font-family:'Noto Serif JP',serif; font-weight:900; display:block;
+    text-shadow:0 0 20px #c4b5fd, 0 0 40px #7c3aed, 2px 2px 0 #000;
   }
-  .subtitle-text {
-    color: #e9d5ff;
-    letter-spacing: 3px;
-    text-shadow: 0 0 10px #a78bfa;
-    margin-bottom: 30px;
-  }
-  .difficulty-label {
-    color: #d8b4fe;
-    letter-spacing: 6px;
-    text-transform: uppercase;
-    margin-bottom: 20px;
-    text-shadow: 0 0 8px #a78bfa;
-  }
-  .btn-group {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-  }
+  .subtitle-text { color:#e9d5ff; letter-spacing:3px; text-shadow:0 0 10px #a78bfa; margin-bottom:30px; }
+  .difficulty-label { color:#d8b4fe; letter-spacing:6px; margin-bottom:20px; text-shadow:0 0 8px #a78bfa; }
+  .btn-group { display:flex; flex-direction:column; align-items:center; gap:12px; }
   .diff-btn {
-    position: relative;
-    border: none;
-    cursor: pointer;
-    border-radius: 4px;
-    overflow: hidden;
-    transition: transform 0.2s, box-shadow 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'Noto Serif JP', serif;
-    font-weight: 700;
-    color: #fff;
-    letter-spacing: 4px;
-    text-shadow: 1px 1px 2px #000;
+    position:relative; border:none; cursor:pointer; border-radius:4px; overflow:hidden;
+    transition:transform 0.2s, box-shadow 0.2s; display:flex; align-items:center; justify-content:center;
+    font-family:'Noto Serif JP',serif; font-weight:700; color:#fff; letter-spacing:4px; text-shadow:1px 1px 2px #000;
   }
-  .diff-btn::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-    transition: opacity 0.2s;
-    background: rgba(255,255,255,0.15);
-  }
-  .diff-btn:hover { transform: scale(1.05); }
-  .diff-btn:hover::before { opacity: 1; }
-  .diff-btn:active { transform: scale(0.98); }
+  .diff-btn::before { content:''; position:absolute; inset:0; opacity:0; transition:opacity 0.2s; background:rgba(255,255,255,0.15); }
+  .diff-btn:hover { transform:scale(1.05); }
+  .diff-btn:hover::before { opacity:1; }
+  .diff-btn:active { transform:scale(0.98); }
+  .btn-beginner1 { background:linear-gradient(135deg,#1e40af,#3b82f6,#93c5fd); box-shadow:0 4px 20px rgba(59,130,246,0.5); }
+  .btn-beginner2 { background:linear-gradient(135deg,#065f46,#10b981,#6ee7b7); box-shadow:0 4px 20px rgba(16,185,129,0.5); }
+  .btn-advanced  { background:linear-gradient(135deg,#7c2d12,#dc2626,#fca5a5); box-shadow:0 4px 20px rgba(220,38,38,0.5); }
+  .btn-leave     { background:linear-gradient(135deg,#374151,#6b7280,#d1d5db); box-shadow:0 4px 20px rgba(107,114,128,0.4); }
 
-  .btn-beginner1 { background: linear-gradient(135deg, #1e40af, #3b82f6, #93c5fd); box-shadow: 0 4px 20px rgba(59,130,246,0.5); }
-  .btn-beginner2 { background: linear-gradient(135deg, #065f46, #10b981, #6ee7b7); box-shadow: 0 4px 20px rgba(16,185,129,0.5); }
-  .btn-advanced  { background: linear-gradient(135deg, #7c2d12, #dc2626, #fca5a5); box-shadow: 0 4px 20px rgba(220,38,38,0.5); }
-  .btn-leave     { background: linear-gradient(135deg, #374151, #6b7280, #d1d5db); box-shadow: 0 4px 20px rgba(107,114,128,0.4); }
+  #game-screen { background-size:cover; background-position:center; }
 
-  /* ===== 遊戲畫面 ===== */
-  #game-screen { background-size: cover; background-position: center; }
-
-  /* 判定線 */
   #judge-line {
-    position: absolute;
-    top: 0; bottom: 0;
-    width: 3px;
-    background: repeating-linear-gradient(
-      to bottom,
-      rgba(255,255,100,0.9) 0px,
-      rgba(255,255,100,0.9) 12px,
-      transparent 12px,
-      transparent 20px
-    );
-    box-shadow: 0 0 8px rgba(255,255,100,0.6), 0 0 16px rgba(255,255,100,0.3);
-    z-index: 20;
-    pointer-events: none;
+    position:absolute; top:0; bottom:0; width:3px;
+    background:repeating-linear-gradient(to bottom, rgba(255,255,100,0.9) 0px, rgba(255,255,100,0.9) 12px, transparent 12px, transparent 20px);
+    box-shadow:0 0 8px rgba(255,255,100,0.6), 0 0 16px rgba(255,255,100,0.3);
+    z-index:20; pointer-events:none;
   }
 
-  /* 角色 */
-  #character {
-    position: absolute;
-    bottom: 20px;
-    z-index: 30;
-    pointer-events: none;
-  }
-  #character img {
-    display: block;
-    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
-  }
-  #character.hit   { animation: hitFlash 1s ease; }
-  #character.clear { animation: clearBounce 2s ease; }
+  #character { position:absolute; bottom:20px; z-index:30; pointer-events:none; }
+  #character img { display:block; filter:drop-shadow(0 4px 8px rgba(0,0,0,0.5)); }
+  #character.hit   { animation:hitFlash 1s ease; }
+  #character.clear { animation:clearBounce 2s ease; }
   @keyframes hitFlash {
-    0%,100% { opacity: 1; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5)); }
-    20%,60% { opacity: 0.3; filter: drop-shadow(0 0 12px rgba(255,50,50,0.9)); }
-    40%,80% { opacity: 1; filter: drop-shadow(0 0 8px rgba(255,50,50,0.5)); }
+    0%,100%{opacity:1;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.5))}
+    20%,60%{opacity:0.3;filter:drop-shadow(0 0 12px rgba(255,50,50,0.9))}
+    40%,80%{opacity:1;filter:drop-shadow(0 0 8px rgba(255,50,50,0.5))}
   }
   @keyframes clearBounce {
-    0%,100% { transform: translateY(0); }
-    25%  { transform: translateY(-30px); }
-    50%  { transform: translateY(-10px); }
-    75%  { transform: translateY(-20px); }
+    0%,100%{transform:translateY(0)} 25%{transform:translateY(-30px)} 50%{transform:translateY(-10px)} 75%{transform:translateY(-20px)}
   }
 
-  /* 魔法光束 */
-  #attack-beam {
-    position: absolute;
-    z-index: 25;
-    pointer-events: none;
-    display: none;
-    transform-origin: left center;
-  }
-  #attack-beam img {
-    width: 100%;
-    height: 100%;
-    object-fit: fill;
-  }
+  #attack-beam { position:absolute; z-index:25; pointer-events:none; display:none; transform-origin:left center; }
+  #attack-beam img { width:100%; height:100%; object-fit:fill; }
 
-  /* 五十音圖案 */
   .kana-tile {
-    position: absolute;
-    z-index: 15;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    pointer-events: none;
-    will-change: left;
+    position:absolute; z-index:15; display:flex; align-items:center; justify-content:center;
+    pointer-events:none; will-change:left;
   }
-  .kana-tile .frame-img {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-  }
+  .kana-tile .frame-img { position:absolute; inset:0; width:100%; height:100%; object-fit:contain; }
   .kana-tile .kana-text {
-    position: relative;
-    z-index: 2;
-    font-family: 'Noto Serif JP', serif;
-    font-weight: 900;
-    color: #fff;
-    text-shadow: 0 0 8px rgba(200,150,255,0.9),
-                 2px  2px 0 #000,
-                -2px -2px 0 #000,
-                 2px -2px 0 #000,
-                -2px  2px 0 #000;
-    line-height: 1;
-    user-select: none;
+    position:relative; z-index:2; font-family:'Noto Serif JP',serif; font-weight:900; color:#fff;
+    text-shadow:0 0 10px rgba(220,180,255,1), 3px 3px 0 #000,-3px -3px 0 #000, 3px -3px 0 #000,-3px 3px 0 #000;
+    line-height:1; user-select:none;
   }
-  .kana-tile.success { animation: kanaSuccess 0.4s ease forwards; }
-  .kana-tile.fail    { animation: kanaFail    0.5s ease forwards; }
+  .kana-tile.success { animation:kanaSuccess 0.4s ease forwards; }
+  .kana-tile.fail    { animation:kanaFail    0.5s ease forwards; }
   @keyframes kanaSuccess {
-    0%   { opacity: 1; transform: scale(1); }
-    30%  { opacity: 1; transform: scale(1.2); filter: brightness(2.5); }
-    60%  { opacity: 0; transform: scale(0.8); }
-    100% { opacity: 0; transform: scale(0); }
+    0%{opacity:1;transform:scale(1)} 30%{opacity:1;transform:scale(1.2);filter:brightness(2.5)} 60%{opacity:0;transform:scale(0.8)} 100%{opacity:0;transform:scale(0)}
   }
   @keyframes kanaFail {
-    0%   { transform: scale(1); opacity: 1; }
-    20%  { transform: scale(1.3); opacity: 1; filter: hue-rotate(180deg) brightness(1.5); }
-    40%  { transform: scale(0.9) translateX(-10px); }
-    60%  { transform: scale(1.1) translateX(10px); }
-    80%  { transform: scale(0.5); opacity: 0.3; }
-    100% { transform: scale(0); opacity: 0; }
+    0%{transform:scale(1);opacity:1} 20%{transform:scale(1.3);opacity:1;filter:hue-rotate(180deg) brightness(1.5)}
+    40%{transform:scale(0.9) translateX(-10px)} 60%{transform:scale(1.1) translateX(10px)}
+    80%{transform:scale(0.5);opacity:0.3} 100%{transform:scale(0);opacity:0}
   }
 
-  /* HUD */
   #hud {
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    z-index: 40;
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    padding: 10px 16px;
-    background: linear-gradient(to bottom, rgba(0,0,0,0.65), transparent);
-    pointer-events: none;
+    position:absolute; top:0; left:0; right:0; z-index:40;
+    display:flex; align-items:flex-start; justify-content:space-between; padding:10px 16px;
+    background:linear-gradient(to bottom,rgba(0,0,0,0.65),transparent); pointer-events:none;
   }
-  #hearts-container { display: flex; gap: 6px; align-items: center; }
-  .heart {
-    display: inline-block;
-    font-size: 28px;
-    filter: drop-shadow(0 0 4px rgba(255,50,100,0.7));
-    transition: all 0.3s;
-    color: #ff3366;
-  }
-  .heart.lost { color: #333; filter: none; opacity: 0.4; }
-  #timer-display {
-    font-family: 'Noto Serif JP', serif;
-    font-weight: 900;
-    color: #fff;
-    text-shadow: 0 0 10px rgba(200,150,255,0.8), 1px 1px 2px #000;
-    letter-spacing: 2px;
-    text-align: center;
-  }
-  #timer-display.urgent { color: #ff6666; animation: timerPulse 0.5s ease infinite; }
-  @keyframes timerPulse {
-    0%,100% { transform: scale(1); }
-    50%     { transform: scale(1.1); }
-  }
-  #difficulty-badge {
-    font-family: 'Noto Serif JP', serif;
-    font-weight: 700;
-    color: #d8b4fe;
-    letter-spacing: 2px;
-    text-shadow: 0 0 8px rgba(167,139,250,0.6), 1px 1px 2px #000;
-    text-align: right;
-  }
+  #hearts-container { display:flex; gap:6px; align-items:center; }
+  .heart { display:inline-block; font-size:28px; filter:drop-shadow(0 0 4px rgba(255,50,100,0.7)); transition:all 0.3s; color:#ff3366; }
+  .heart.lost { color:#333; filter:none; opacity:0.4; }
+  #timer-display { font-family:'Noto Serif JP',serif; font-weight:900; color:#fff; text-shadow:0 0 10px rgba(200,150,255,0.8),1px 1px 2px #000; letter-spacing:2px; text-align:center; }
+  #timer-display.urgent { color:#ff6666; animation:timerPulse 0.5s ease infinite; }
+  @keyframes timerPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
+  #difficulty-badge { font-family:'Noto Serif JP',serif; font-weight:700; color:#d8b4fe; letter-spacing:2px; text-shadow:0 0 8px rgba(167,139,250,0.6),1px 1px 2px #000; text-align:right; }
 
-  /* 語音狀態 */
+  /* 語音辨識狀態 + 目前辨識到的字 */
   #voice-indicator {
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    z-index: 40;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 8px;
-    background: linear-gradient(to top, rgba(0,0,0,0.5), transparent);
-    pointer-events: none;
+    position:absolute; bottom:0; left:0; right:0; z-index:40;
+    display:flex; align-items:center; justify-content:center; gap:16px; padding:8px;
+    background:linear-gradient(to top,rgba(0,0,0,0.5),transparent); pointer-events:none;
   }
-  #voice-status { color: rgba(255,255,255,0.7); letter-spacing: 2px; font-size: 13px; }
-  #voice-status.listening  { color: #86efac; animation: voicePulse 1.5s ease infinite; }
-  #voice-status.recognized { color: #fde68a; }
-  @keyframes voicePulse {
-    0%,100% { opacity: 1; }
-    50%     { opacity: 0.5; }
-  }
+  #voice-status { color:rgba(255,255,255,0.7); letter-spacing:2px; font-size:13px; }
+  #voice-status.listening  { color:#86efac; animation:voicePulse 1.5s ease infinite; }
+  #voice-status.recognized { color:#fde68a; }
+  #voice-heard { color:#fde68a; font-size:22px; font-weight:900; min-width:40px; text-align:center;
+    text-shadow:0 0 10px #fbbf24; letter-spacing:2px; }
+  @keyframes voicePulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
 
-  /* ===== 覆蓋訊息 ===== */
   .overlay-message {
-    position: absolute;
-    inset: 0;
-    z-index: 50;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    pointer-events: none;
-    opacity: 0;
+    position:absolute; inset:0; z-index:50; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; pointer-events:none; opacity:0;
   }
-  .overlay-message.show { pointer-events: auto; }
+  .overlay-message.show { pointer-events:auto; }
 
-  #start-message { background: radial-gradient(ellipse at center, rgba(124,58,237,0.4) 0%, transparent 70%); }
-  #start-message .msg-text {
-    font-family: 'Noto Serif JP', serif;
-    font-weight: 900;
-    color: #fff;
-    text-shadow: 0 0 20px #a78bfa, 0 0 40px #7c3aed, 2px 2px 0 #000;
-    letter-spacing: 8px;
-  }
-  @keyframes startFadeIn  { from { opacity:0; transform:scale(0.5); } to { opacity:1; transform:scale(1); } }
-  @keyframes startFadeOut { from { opacity:1; transform:scale(1);   } to { opacity:0; transform:scale(1.3); } }
+  #start-message { background:radial-gradient(ellipse at center,rgba(124,58,237,0.4) 0%,transparent 70%); }
+  #start-message .msg-text { font-family:'Noto Serif JP',serif; font-weight:900; color:#fff; text-shadow:0 0 20px #a78bfa,0 0 40px #7c3aed,2px 2px 0 #000; letter-spacing:8px; }
+  @keyframes startFadeIn  { from{opacity:0;transform:scale(0.5)} to{opacity:1;transform:scale(1)} }
+  @keyframes startFadeOut { from{opacity:1;transform:scale(1)}   to{opacity:0;transform:scale(1.3)} }
 
-  #clear-message { background: radial-gradient(ellipse at center, rgba(16,185,129,0.3) 0%, transparent 70%); }
-  #clear-message .msg-text {
-    font-family: 'Noto Serif JP', serif;
-    font-weight: 900;
-    color: #fff;
-    text-shadow: 0 0 20px #6ee7b7, 0 0 40px #10b981, 2px 2px 0 #000;
-    letter-spacing: 6px;
-    animation: clearFlash 2s ease infinite;
-  }
+  #clear-message { background:radial-gradient(ellipse at center,rgba(16,185,129,0.3) 0%,transparent 70%); }
+  #clear-message .msg-text { font-family:'Noto Serif JP',serif; font-weight:900; color:#fff; text-shadow:0 0 20px #6ee7b7,0 0 40px #10b981,2px 2px 0 #000; letter-spacing:6px; animation:clearFlash 2s ease infinite; }
   @keyframes clearFlash {
-    0%,100% { text-shadow: 0 0 20px #6ee7b7, 0 0 40px #10b981, 2px 2px 0 #000; transform: scale(1); }
-    50%     { text-shadow: 0 0 40px #6ee7b7, 0 0 80px #10b981, 0 0 100px #6ee7b7, 2px 2px 0 #000; transform: scale(1.05); }
+    0%,100%{text-shadow:0 0 20px #6ee7b7,0 0 40px #10b981,2px 2px 0 #000;transform:scale(1)}
+    50%{text-shadow:0 0 40px #6ee7b7,0 0 80px #10b981,0 0 100px #6ee7b7,2px 2px 0 #000;transform:scale(1.05)}
   }
 
-  #gameover-message { background: radial-gradient(ellipse at center, rgba(220,38,38,0.3) 0%, transparent 70%); }
-  #gameover-message .msg-text {
-    font-family: 'Noto Serif JP', serif;
-    font-weight: 900;
-    color: #ff6666;
-    text-shadow: 0 0 20px #ef4444, 0 0 40px #dc2626, 2px 2px 0 #000;
-    letter-spacing: 4px;
-    animation: gameoverShatter 2s ease forwards;
-  }
+  #gameover-message { background:radial-gradient(ellipse at center,rgba(220,38,38,0.3) 0%,transparent 70%); }
+  #gameover-message .msg-text { font-family:'Noto Serif JP',serif; font-weight:900; color:#ff6666; text-shadow:0 0 20px #ef4444,0 0 40px #dc2626,2px 2px 0 #000; letter-spacing:4px; animation:gameoverShatter 2s ease forwards; }
   @keyframes gameoverShatter {
-    0%   { opacity:0; transform:scale(2); filter:blur(10px); }
-    30%  { opacity:1; transform:scale(1); filter:blur(0); }
-    70%  { transform:scale(1.02) skew(-2deg); }
-    85%  { transform:scale(0.98) skew(2deg); }
-    100% { transform:scale(1) skew(0deg); }
+    0%{opacity:0;transform:scale(2);filter:blur(10px)} 30%{opacity:1;transform:scale(1);filter:blur(0)}
+    70%{transform:scale(1.02) skew(-2deg)} 85%{transform:scale(0.98) skew(2deg)} 100%{transform:scale(1) skew(0deg)}
   }
 
   .back-btn {
-    margin-top: 30px;
-    padding: 12px 40px;
-    background: rgba(255,255,255,0.15);
-    border: 2px solid rgba(255,255,255,0.5);
-    border-radius: 6px;
-    color: #fff;
-    font-family: 'Noto Serif JP', serif;
-    font-weight: 700;
-    letter-spacing: 4px;
-    cursor: pointer;
-    backdrop-filter: blur(4px);
-    transition: all 0.2s;
-    pointer-events: auto;
-    text-shadow: 1px 1px 2px #000;
+    margin-top:30px; padding:12px 40px; background:rgba(255,255,255,0.15);
+    border:2px solid rgba(255,255,255,0.5); border-radius:6px; color:#fff;
+    font-family:'Noto Serif JP',serif; font-weight:700; letter-spacing:4px;
+    cursor:pointer; backdrop-filter:blur(4px); transition:all 0.2s; pointer-events:auto; text-shadow:1px 1px 2px #000;
   }
-  .back-btn:hover { background: rgba(255,255,255,0.3); border-color: #fff; transform: scale(1.05); }
+  .back-btn:hover { background:rgba(255,255,255,0.3); border-color:#fff; transform:scale(1.05); }
 
-  /* 判定浮現文字 */
   .judge-popup {
-    position: absolute;
-    z-index: 45;
-    font-family: 'Noto Serif JP', serif;
-    font-weight: 900;
-    pointer-events: none;
-    animation: judgePopup 0.8s ease forwards;
+    position:absolute; z-index:45; font-family:'Noto Serif JP',serif; font-weight:900;
+    pointer-events:none; animation:judgePopup 0.8s ease forwards;
   }
-  .judge-popup.ok   { color: #86efac; text-shadow: 0 0 10px #22c55e; }
-  .judge-popup.miss { color: #fca5a5; text-shadow: 0 0 10px #ef4444; }
-  @keyframes judgePopup {
-    0%   { opacity:1; transform:translateY(0) scale(1); }
-    100% { opacity:0; transform:translateY(-40px) scale(1.3); }
-  }
+  .judge-popup.ok   { color:#86efac; text-shadow:0 0 10px #22c55e; }
+  .judge-popup.miss { color:#fca5a5; text-shadow:0 0 10px #ef4444; }
+  @keyframes judgePopup { 0%{opacity:1;transform:translateY(0) scale(1)} 100%{opacity:0;transform:translateY(-40px) scale(1.3)} }
 </style>
 </head>
 <body>
 
-<!-- 橫向提示 -->
 <div id="rotate-notice">
   <div class="rotate-icon">📱</div>
   <p>デバイスを横向きにしてください</p>
   <p style="font-size:14px;color:#666;">Please rotate your device to landscape</p>
 </div>
 
-<!-- 遊戲容器 -->
 <div id="game-wrapper">
   <div id="game-canvas">
 
-    <!-- 開始畫面 -->
     <div id="title-screen" class="screen active">
       <div class="overlay"></div>
       <div class="content">
@@ -437,24 +193,21 @@
       </div>
     </div>
 
-    <!-- 遊戲畫面 -->
     <div id="game-screen" class="screen">
       <div id="judge-line"></div>
       <div id="character"><img id="char-img" src="images/frierenstand.png" alt="frieren"></div>
       <div id="attack-beam"><img src="images/attackeffect.png" alt="beam"></div>
-
       <div id="hud">
         <div id="hearts-container"></div>
         <div id="timer-display"></div>
         <div id="difficulty-badge"></div>
       </div>
-
       <div id="voice-indicator">
         <span id="voice-status">🎤 マイクを初期化中...</span>
+        <span id="voice-heard"></span>
       </div>
-
-      <div id="start-message"   class="overlay-message"><div class="msg-text" id="start-msg-text"></div></div>
-      <div id="clear-message"   class="overlay-message"><div class="msg-text" id="clear-msg-text"></div><button class="back-btn" onclick="goTitle()">タイトルへ戻る</button></div>
+      <div id="start-message"    class="overlay-message"><div class="msg-text" id="start-msg-text"></div></div>
+      <div id="clear-message"    class="overlay-message"><div class="msg-text" id="clear-msg-text"></div><button class="back-btn" onclick="goTitle()">タイトルへ戻る</button></div>
       <div id="gameover-message" class="overlay-message"><div class="msg-text" id="gameover-msg-text"></div><button class="back-btn" onclick="goTitle()">タイトルへ戻る</button></div>
     </div>
 
@@ -470,7 +223,7 @@ const KANA_DATA = {
   'い': ['い','i','イ'],
   'う': ['う','u','ウ'],
   'え': ['え','e','エ'],
-  'お': ['お','o','オ','を','wo'],
+  'お': ['お','o','オ'],
   'か': ['か','ka','カ'],
   'き': ['き','ki','キ'],
   'く': ['く','ku','ク'],
@@ -520,10 +273,11 @@ const DIFFICULTY = {
   beginner1: {
     label: '初級 I',
     kana: ['あ','い','う','え','お','か','き','く','け','こ','さ','し','す','せ','そ','た','ち','つ','て','と'],
-    totalTiles: 40,   // 總共生成40個圖案
-    speed: 90,
-    interval: 2800,
-    judgeWindow: { before: 600, after: 1200 },
+    totalTiles: 40,
+    speed: 90,       // px/秒
+    interval: 2800,  // ms 圖案生成間隔
+    // 判定窗口（像素）：圖案中心在判定線左右這個範圍內都算「在線上」
+    judgePixels: 80, // 判定線左右各 80px = 共 160px 的寬容範圍
   },
   beginner2: {
     label: '初級 II',
@@ -531,7 +285,7 @@ const DIFFICULTY = {
     totalTiles: 40,
     speed: 100,
     interval: 2800,
-    judgeWindow: { before: 600, after: 1200 },
+    judgePixels: 80,
   },
   advanced: {
     label: '進階',
@@ -539,7 +293,7 @@ const DIFFICULTY = {
     totalTiles: 40,
     speed: 120,
     interval: 2300,
-    judgeWindow: { before: 500, after: 900 },
+    judgePixels: 60,
   }
 };
 
@@ -554,47 +308,32 @@ let state = {
   tiles: [],
   spawnTimer: null,
   gameTimer: null,
-  spawnQueue: [],   // 預先排好的40個圖案順序
-  spawnIndex: 0,    // 目前已生成第幾個
+  spawnQueue: [],
+  spawnIndex: 0,
   recognition: null,
-  recognizing: false,
   gameRunning: false,
 };
 
 // ============================================================
-// RWD：讓遊戲畫面填滿螢幕（保持16:9比例）
+// RWD 縮放
 // ============================================================
 const BASE_W = 1280, BASE_H = 720;
 let scale = 1;
 
 function resizeGame() {
   const ww = window.innerWidth, wh = window.innerHeight;
-  // 用 cover 方式：填滿螢幕，可能裁切
-  // 用 contain 方式：保持完整，兩側黑邊
-  // 此處改用 contain 以保持完整畫面，但盡量填滿
   scale = Math.min(ww / BASE_W, wh / BASE_H);
-
   const canvas = document.getElementById('game-canvas');
   canvas.style.width  = BASE_W + 'px';
   canvas.style.height = BASE_H + 'px';
   canvas.style.transform = `scale(${scale})`;
   canvas.style.transformOrigin = 'center center';
-
-  // 填滿 wrapper
-  const wrapper = document.getElementById('game-wrapper');
-  wrapper.style.width  = '100vw';
-  wrapper.style.height = '100vh';
-
   checkOrientation();
 }
 
 function checkOrientation() {
   const notice = document.getElementById('rotate-notice');
-  if (window.innerWidth < window.innerHeight && window.innerWidth < 900) {
-    notice.style.display = 'flex';
-  } else {
-    notice.style.display = 'none';
-  }
+  notice.style.display = (window.innerWidth < window.innerHeight && window.innerWidth < 900) ? 'flex' : 'none';
 }
 
 window.addEventListener('resize', resizeGame);
@@ -608,40 +347,31 @@ const CHAR_W      = 190;
 const CHAR_H      = 260;
 const CHAR_X      = 5;
 const CHAR_BOTTOM = 10;
-// 判定線：角色右方約3公分（在1280px畫面下約80px）
-// 角色右邊緣 = CHAR_X + CHAR_W = 195，再加 80px = 275
-const JUDGE_X     = CHAR_X + CHAR_W + 80;  // = 275
-
+const JUDGE_X     = CHAR_X + CHAR_W + 80;  // ≈ 275px，角色右方約3公分
 const TILE_SIZE   = 110;
 const TILE_SPAWN_X = BASE_W + TILE_SIZE;
 const TILE_MIN_Y  = 60;
 const TILE_MAX_Y  = BASE_H - TILE_SIZE - 60;
 
 // ============================================================
-// 初始化 UI
+// 初始化
 // ============================================================
 function initTitle() {
   document.getElementById('title-screen').style.backgroundImage = "url('images/gamebeginingbackground.png')";
   document.getElementById('game-screen').style.backgroundImage  = "url('images/gamebeginbackground.png')";
-
   buildButtons();
 
   const char = document.getElementById('character');
   char.style.left   = CHAR_X + 'px';
   char.style.bottom = CHAR_BOTTOM + 'px';
-
   const charImg = document.getElementById('char-img');
-  charImg.style.width         = CHAR_W + 'px';
-  charImg.style.height        = CHAR_H + 'px';
-  charImg.style.objectFit     = 'contain';
+  charImg.style.width  = CHAR_W + 'px';
+  charImg.style.height = CHAR_H + 'px';
+  charImg.style.objectFit = 'contain';
   charImg.style.objectPosition = 'bottom center';
 
   document.getElementById('judge-line').style.left = JUDGE_X + 'px';
 
-  updateFontSizes();
-}
-
-function updateFontSizes() {
   document.getElementById('timer-display').style.fontSize    = '32px';
   document.getElementById('difficulty-badge').style.fontSize = '14px';
   document.getElementById('subtitle-txt').style.fontSize     = '16px';
@@ -653,23 +383,17 @@ function updateFontSizes() {
 function buildButtons() {
   const group = document.getElementById('btn-group');
   group.innerHTML = '';
-  const btns = [
+  [
     { key:'beginner1', label:'初級 I',  cls:'btn-beginner1', w:240, h:60 },
     { key:'beginner2', label:'初級 II', cls:'btn-beginner2', w:240, h:60 },
     { key:'advanced',  label:'進階',    cls:'btn-advanced',  w:240, h:60 },
     { key:'leave',     label:'離開',    cls:'btn-leave',     w:180, h:48 },
-  ];
-  btns.forEach(b => {
+  ].forEach(b => {
     const btn = document.createElement('button');
     btn.className = `diff-btn ${b.cls}`;
-    btn.style.width    = b.w + 'px';
-    btn.style.height   = b.h + 'px';
-    btn.style.fontSize = '18px';
-    btn.textContent    = b.label;
-    btn.addEventListener('click', () => {
-      if (b.key === 'leave') { window.close(); return; }
-      startGame(b.key);
-    });
+    btn.style.cssText = `width:${b.w}px;height:${b.h}px;font-size:18px;`;
+    btn.textContent = b.label;
+    btn.addEventListener('click', () => b.key === 'leave' ? window.close() : startGame(b.key));
     group.appendChild(btn);
   });
 }
@@ -699,34 +423,29 @@ function startGame(diffKey) {
   state.timeLeft    = 120;
   state.gameRunning = false;
   state.spawnIndex  = 0;
-
-  // 預先排好40個圖案的出現順序（隨機打亂，但確保每個字都出現）
-  state.spawnQueue = buildSpawnQueue(diffKey);
+  state.spawnQueue  = buildSpawnQueue(diffKey);
 
   showScreen('game-screen');
   hideAllOverlays();
   renderHearts();
   updateTimer();
-  updateDiffBadge();
-
+  document.getElementById('difficulty-badge').textContent  = DIFFICULTY[diffKey].label;
+  document.getElementById('difficulty-badge').style.fontSize = '14px';
   document.querySelectorAll('.kana-tile').forEach(t => t.remove());
   document.getElementById('attack-beam').style.display = 'none';
+  document.getElementById('voice-heard').textContent = '';
   setCharState('stand');
   initSpeech();
   showStartMessage();
 }
 
-// 建立40個圖案的生成序列（循環打亂確保平均分配）
+// 隨機排列40個圖案（確保每個字都出現）
 function buildSpawnQueue(diffKey) {
-  const diff   = DIFFICULTY[diffKey];
-  const kana   = diff.kana;
-  const total  = diff.totalTiles; // 40
-  const queue  = [];
-
-  // 把所有字循環填入，直到夠40個，每輪都打亂
+  const kana  = DIFFICULTY[diffKey].kana;
+  const total = DIFFICULTY[diffKey].totalTiles;
+  const queue = [];
   while (queue.length < total) {
-    const shuffled = [...kana].sort(() => Math.random() - 0.5);
-    queue.push(...shuffled);
+    queue.push(...[...kana].sort(() => Math.random() - 0.5));
   }
   return queue.slice(0, total);
 }
@@ -739,10 +458,8 @@ function showStartMessage() {
   txt.style.animation = 'none';
   msg.style.opacity   = '1';
   msg.classList.add('show');
-
   void txt.offsetWidth;
   txt.style.animation = 'startFadeIn 0.4s ease, startFadeOut 0.5s ease 2s forwards';
-
   setTimeout(() => {
     msg.style.opacity = '0';
     msg.classList.remove('show');
@@ -752,17 +469,13 @@ function showStartMessage() {
 
 function beginGameplay() {
   state.gameRunning = true;
-  state.phase       = 'playing';
-
-  // 倒數計時
+  state.phase = 'playing';
   state.gameTimer = setInterval(() => {
     if (!state.gameRunning) return;
     state.timeLeft--;
     updateTimer();
     if (state.timeLeft <= 0) triggerClear();
   }, 1000);
-
-  // 開始生成五十音
   scheduleSpawn();
 }
 
@@ -770,38 +483,26 @@ function beginGameplay() {
 // 五十音生成
 // ============================================================
 function scheduleSpawn() {
-  if (!state.gameRunning) return;
-  if (state.spawnIndex >= state.spawnQueue.length) return; // 40個已全部生成
-
+  if (!state.gameRunning || state.spawnIndex >= state.spawnQueue.length) return;
   spawnTile();
-
-  const diff = DIFFICULTY[state.difficulty];
-  const jitter = (Math.random() * 600) - 300; // ±300ms 隨機抖動
+  const diff   = DIFFICULTY[state.difficulty];
+  const jitter = (Math.random() * 600) - 300;
   state.spawnTimer = setTimeout(scheduleSpawn, diff.interval + jitter);
 }
 
 function spawnTile() {
-  if (!state.gameRunning) return;
-  if (state.spawnIndex >= state.spawnQueue.length) return;
+  if (!state.gameRunning || state.spawnIndex >= state.spawnQueue.length) return;
+  const kana = state.spawnQueue[state.spawnIndex++];
+  const y    = TILE_MIN_Y + Math.random() * (TILE_MAX_Y - TILE_MIN_Y);
 
-  const kana = state.spawnQueue[state.spawnIndex];
-  state.spawnIndex++;
+  const tile     = document.createElement('div');
+  tile.className = 'kana-tile';
+  tile.style.cssText = `width:${TILE_SIZE}px;height:${TILE_SIZE}px;left:${TILE_SPAWN_X}px;top:${y}px;`;
 
-  const y = TILE_MIN_Y + Math.random() * (TILE_MAX_Y - TILE_MIN_Y);
-
-  const tile = document.createElement('div');
-  tile.className  = 'kana-tile';
-  tile.style.width  = TILE_SIZE + 'px';
-  tile.style.height = TILE_SIZE + 'px';
-  tile.style.left   = TILE_SPAWN_X + 'px';
-  tile.style.top    = y + 'px';
-
-  // 底框圖片
   const frameImg = document.createElement('img');
   frameImg.className = 'frame-img';
-  frameImg.src       = 'images/50onframe.png';
+  frameImg.src = 'images/50onframe.png';
 
-  // 五十音文字
   const kanaText = document.createElement('span');
   kanaText.className   = 'kana-text';
   kanaText.textContent = kana;
@@ -811,70 +512,43 @@ function spawnTile() {
   tile.appendChild(kanaText);
   document.getElementById('game-screen').appendChild(tile);
 
-  const tileObj = {
-    el: tile,
-    x: TILE_SPAWN_X,
-    y: y,
-    kana: kana,
-    judged: false,
-    atLine: false,
-    atLineTime: 0,
-    missTriggered: false,
-    removed: false,
-  };
-  state.tiles.push(tileObj);
+  state.tiles.push({ el:tile, x:TILE_SPAWN_X, y, kana, judged:false, missTriggered:false, removed:false });
 }
 
 // ============================================================
-// 遊戲迴圈
+// 遊戲迴圈（純像素判定，不混用毫秒）
 // ============================================================
 let lastTime = 0;
 function gameLoop(ts) {
-  if (!state.gameRunning) {
-    requestAnimationFrame(gameLoop);
-    return;
+  const dt = Math.min((ts - lastTime) / 1000, 0.1);
+  lastTime = ts;
+
+  if (state.gameRunning && state.difficulty) {
+    const speed      = DIFFICULTY[state.difficulty].speed;
+    const judgePixels = DIFFICULTY[state.difficulty].judgePixels;
+    const toRemove   = [];
+
+    for (const tile of state.tiles) {
+      if (tile.removed) continue;
+
+      tile.x -= speed * dt;
+      tile.el.style.left = tile.x + 'px';
+
+      const cx = tile.x + TILE_SIZE / 2; // 圖案中心 X
+
+      // 判定失敗：圖案中心飛過判定線左方 judgePixels 像素後 → MISS
+      if (!tile.judged && !tile.missTriggered && cx < JUDGE_X - judgePixels) {
+        tile.missTriggered = true;
+        triggerMiss(tile);
+      }
+
+      if (tile.x + TILE_SIZE < -20) toRemove.push(tile);
+    }
+    toRemove.forEach(removeTile);
   }
 
-  const dt  = Math.min((ts - lastTime) / 1000, 0.1);
-  lastTime  = ts;
-
-  const diff  = DIFFICULTY[state.difficulty];
-  const speed = diff.speed;
-  const now   = Date.now();
-  const toRemove = [];
-
-  for (const tile of state.tiles) {
-    if (tile.removed) continue;
-
-    tile.x -= speed * dt;
-    tile.el.style.left = tile.x + 'px';
-
-    const tileCenterX = tile.x + TILE_SIZE / 2;
-
-    // 進入判定窗口
-    if (!tile.atLine && tileCenterX <= JUDGE_X + diff.judgeWindow.before) {
-      tile.atLine     = true;
-      tile.atLineTime = now;
-    }
-
-    // 突破判定線（中心超過判定線且超過寬容時間後）
-    if (!tile.judged && !tile.missTriggered &&
-        tileCenterX < JUDGE_X - 30 &&
-        (now - tile.atLineTime) > diff.judgeWindow.after) {
-      tile.missTriggered = true;
-      triggerMiss(tile);
-    }
-
-    // 完全飛出螢幕外才移除
-    if (tile.x + TILE_SIZE < -20) {
-      toRemove.push(tile);
-    }
-  }
-
-  toRemove.forEach(t => removeTile(t));
   requestAnimationFrame(gameLoop);
 }
-
 requestAnimationFrame(ts => { lastTime = ts; gameLoop(ts); });
 
 function removeTile(tileObj) {
@@ -886,38 +560,47 @@ function removeTile(tileObj) {
 
 // ============================================================
 // 語音辨識
+// 核心修正：
+//   - 收到辨識結果後，找「目前最靠近判定線」的圖案來比對
+//   - 不依賴 atLine / 毫秒窗口，改為純像素距離判斷
+//   - 只要圖案中心在 JUDGE_X ± judgePixels 範圍內即可判定
 // ============================================================
 function initSpeech() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SR) {
-    setVoiceStatus('', '⚠️ このブラウザは音声認識に対応していません');
-    return;
-  }
-  if (state.recognition) { try { state.recognition.stop(); } catch(e) {} }
+  if (!SR) { setVoiceStatus('', '⚠️ このブラウザは音声認識に対応していません'); return; }
+  if (state.recognition) { try { state.recognition.stop(); } catch(e){} }
 
-  const rec         = new SR();
-  rec.lang          = 'ja-JP';
-  rec.continuous    = true;
-  rec.interimResults = true;
+  const rec = new SR();
+  rec.lang = 'ja-JP';
+  rec.continuous = true;
+  rec.interimResults = true;  // 中途結果也接收，提高即時性
   rec.maxAlternatives = 5;
-  state.recognition  = rec;
+  state.recognition = rec;
 
   rec.onstart  = () => setVoiceStatus('listening', '🎤 聴いています...');
+
   rec.onresult = (event) => {
+    // 收集所有候選詞（含 interim）
+    const transcripts = [];
     for (let i = event.resultIndex; i < event.results.length; i++) {
       for (let j = 0; j < event.results[i].length; j++) {
         const t = event.results[i][j].transcript.trim();
-        if (t) handleVoiceInput(t);
+        if (t) transcripts.push(t);
       }
     }
+    if (transcripts.length > 0) {
+      // 顯示辨識到的字
+      document.getElementById('voice-heard').textContent = transcripts[0];
+      setTimeout(() => { document.getElementById('voice-heard').textContent = ''; }, 800);
+      handleVoiceInput(transcripts);
+    }
   };
+
   rec.onerror = (e) => {
     if (e.error === 'no-speech' || e.error === 'aborted') return;
-    setTimeout(() => { if (state.gameRunning) restartSpeech(); }, 1000);
+    setTimeout(() => { if (state.gameRunning) restartSpeech(); }, 500);
   };
-  rec.onend = () => {
-    if (state.gameRunning) setTimeout(restartSpeech, 200);
-  };
+  rec.onend = () => { if (state.gameRunning) setTimeout(restartSpeech, 100); };
   rec.start();
 }
 
@@ -926,31 +609,48 @@ function restartSpeech() {
   try { state.recognition.start(); } catch(e) {}
 }
 
-function handleVoiceInput(transcript) {
+function handleVoiceInput(transcripts) {
   if (!state.gameRunning) return;
-  const now  = Date.now();
-  const diff = DIFFICULTY[state.difficulty];
 
-  for (const tile of state.tiles) {
-    if (tile.judged || tile.removed || !tile.atLine) continue;
+  const judgePixels = DIFFICULTY[state.difficulty].judgePixels;
 
-    const elapsed = now - tile.atLineTime;
-    if (elapsed > diff.judgeWindow.before + diff.judgeWindow.after) continue;
+  // 找出所有在判定窗口內（未判定）的圖案，按距離判定線排序
+  const candidates = state.tiles
+    .filter(tile => {
+      if (tile.judged || tile.removed || tile.missTriggered) return false;
+      const cx = tile.x + TILE_SIZE / 2;
+      // 圖案中心在判定線的 (judgePixels * 3) 範圍內都接受
+      // 乘3是因為語音辨識有延遲，圖案可能已飄過一點
+      return Math.abs(cx - JUDGE_X) < judgePixels * 3;
+    })
+    .sort((a, b) => {
+      // 優先選最靠近判定線的圖案
+      const da = Math.abs((a.x + TILE_SIZE/2) - JUDGE_X);
+      const db = Math.abs((b.x + TILE_SIZE/2) - JUDGE_X);
+      return da - db;
+    });
 
+  if (candidates.length === 0) return;
+
+  // 嘗試每個候選詞去比對最近的圖案
+  for (const tile of candidates) {
     const keywords = KANA_DATA[tile.kana] || [];
-    let hit = keywords.some(kw => transcript.includes(kw));
+    let hit = false;
 
-    // を / お 同音處理
-    if (!hit && (tile.kana === 'を' || tile.kana === 'お')) {
-      hit = transcript.includes('お') || transcript.includes('を');
+    for (const transcript of transcripts) {
+      if (keywords.some(kw => transcript.includes(kw))) { hit = true; break; }
+      // を / お 同音
+      if (tile.kana === 'を' || tile.kana === 'お') {
+        if (transcript.includes('お') || transcript.includes('を') || transcript.includes('o')) { hit = true; break; }
+      }
     }
 
     if (hit) {
       tile.judged = true;
-      triggerSuccess(tile, transcript);
-      setVoiceStatus('recognized', '✨ ' + transcript);
+      setVoiceStatus('recognized', '✨ ' + transcripts[0]);
       setTimeout(() => { if (state.gameRunning) setVoiceStatus('listening', '🎤 聴いています...'); }, 600);
-      break;
+      triggerSuccess(tile);
+      break; // 一次只消一個
     }
   }
 }
@@ -961,11 +661,9 @@ function handleVoiceInput(transcript) {
 function triggerSuccess(tileObj) {
   const cx = tileObj.x + TILE_SIZE / 2;
   const cy = tileObj.y + TILE_SIZE / 2;
-
   setCharState('attack');
   showBeam(cx, cy);
   showJudgePopup('OK！', cx, cy - 30, 'ok');
-
   tileObj.el.classList.add('success');
   setTimeout(() => removeTile(tileObj), 400);
   setTimeout(() => {
@@ -979,7 +677,6 @@ function triggerSuccess(tileObj) {
 // ============================================================
 function triggerMiss(tileObj) {
   if (!state.gameRunning) return;
-
   tileObj.el.classList.add('fail');
   setTimeout(() => removeTile(tileObj), 500);
 
@@ -996,8 +693,7 @@ function triggerMiss(tileObj) {
     if (state.gameRunning && state.hearts > 0) setCharState('stand');
   }, 1000);
 
-  showJudgePopup('MISS', tileObj.x + TILE_SIZE / 2, tileObj.y + TILE_SIZE / 2, 'miss');
-
+  showJudgePopup('MISS', tileObj.x + TILE_SIZE/2, tileObj.y + TILE_SIZE/2, 'miss');
   if (state.hearts <= 0) setTimeout(triggerGameOver, 600);
 }
 
@@ -1008,33 +704,19 @@ function showBeam(targetX, targetY) {
   const beam   = document.getElementById('attack-beam');
   const startX = CHAR_X + CHAR_W - 10;
   const startY = BASE_H - CHAR_BOTTOM - CHAR_H * 0.55;
-  const dx     = targetX - startX;
-  const dy     = targetY - startY;
+  const dx = targetX - startX, dy = targetY - startY;
   const length = Math.sqrt(dx*dx + dy*dy);
   const angle  = Math.atan2(dy, dx) * 180 / Math.PI;
   const beamH  = 50;
-
-  beam.style.left            = startX + 'px';
-  beam.style.top             = (startY - beamH/2) + 'px';
-  beam.style.width           = length + 'px';
-  beam.style.height          = beamH + 'px';
-  beam.style.transform       = `rotate(${angle}deg)`;
-  beam.style.transformOrigin = '0 50%';
-  beam.style.display         = 'block';
+  beam.style.cssText = `left:${startX}px;top:${startY-beamH/2}px;width:${length}px;height:${beamH}px;transform:rotate(${angle}deg);transform-origin:0 50%;display:block;`;
 }
 
 // ============================================================
 // 角色狀態
 // ============================================================
 function setCharState(s) {
-  const map = {
-    stand:    'images/frierenstand.png',
-    attack:   'images/frierenattack.png',
-    attacked: 'images/frierenattacked.png',
-    clear:    'images/frierenclear.png',
-    failed:   'images/frierenfailed.png',
-  };
-  document.getElementById('char-img').src = map[s] || map.stand;
+  const map = { stand:'frierenstand', attack:'frierenattack', attacked:'frierenattacked', clear:'frierenclear', failed:'frierenfailed' };
+  document.getElementById('char-img').src = `images/${map[s]||'frierenstand'}.png`;
 }
 
 // ============================================================
@@ -1045,7 +727,7 @@ function renderHearts() {
   c.innerHTML = '';
   for (let i = 0; i < 6; i++) {
     const h = document.createElement('span');
-    h.className   = 'heart' + (i >= state.hearts ? ' lost' : '');
+    h.className = 'heart' + (i >= state.hearts ? ' lost' : '');
     h.textContent = '❤';
     c.appendChild(h);
   }
@@ -1053,16 +735,10 @@ function renderHearts() {
 
 function updateTimer() {
   const el = document.getElementById('timer-display');
-  const m  = Math.floor(state.timeLeft / 60);
-  const s  = state.timeLeft % 60;
+  const m = Math.floor(state.timeLeft/60), s = state.timeLeft%60;
   el.textContent = m + ':' + String(s).padStart(2,'0');
-  el.classList.toggle('urgent', state.timeLeft <= 30);
   el.style.fontSize = '32px';
-}
-
-function updateDiffBadge() {
-  document.getElementById('difficulty-badge').textContent = DIFFICULTY[state.difficulty].label;
-  document.getElementById('difficulty-badge').style.fontSize = '14px';
+  el.classList.toggle('urgent', state.timeLeft <= 30);
 }
 
 // ============================================================
@@ -1070,82 +746,58 @@ function updateDiffBadge() {
 // ============================================================
 function triggerClear() {
   if (!state.gameRunning) return;
-  state.gameRunning = false;
-  state.phase       = 'result';
+  state.gameRunning = false; state.phase = 'result';
   stopSpawning(); stopSpeech(); clearInterval(state.gameTimer);
-
   setCharState('clear');
   document.getElementById('character').classList.add('clear');
-
   const msg = document.getElementById('clear-message');
-  const txt = document.getElementById('clear-msg-text');
-  txt.style.fontSize  = '60px';
-  txt.textContent     = 'ゲームクリア！';
-  msg.style.opacity   = '1';
-  msg.classList.add('show');
+  document.getElementById('clear-msg-text').style.fontSize = '60px';
+  document.getElementById('clear-msg-text').textContent = 'ゲームクリア！';
+  msg.style.opacity = '1'; msg.classList.add('show');
 }
 
 function triggerGameOver() {
   if (!state.gameRunning) return;
-  state.gameRunning = false;
-  state.phase       = 'result';
+  state.gameRunning = false; state.phase = 'result';
   stopSpawning(); stopSpeech(); clearInterval(state.gameTimer);
-
   setCharState('failed');
-
   const msg = document.getElementById('gameover-message');
-  const txt = document.getElementById('gameover-msg-text');
-  txt.style.fontSize  = '60px';
-  txt.textContent     = 'ゲームオーバー';
-  msg.style.opacity   = '1';
-  msg.classList.add('show');
+  document.getElementById('gameover-msg-text').style.fontSize = '60px';
+  document.getElementById('gameover-msg-text').textContent = 'ゲームオーバー';
+  msg.style.opacity = '1'; msg.classList.add('show');
 }
 
 // ============================================================
-// 判定浮現文字
+// 工具
 // ============================================================
 function showJudgePopup(text, x, y, type) {
   const el = document.createElement('div');
-  el.className   = 'judge-popup ' + type;
+  el.className = 'judge-popup ' + type;
   el.textContent = text;
-  el.style.left  = (x - 20) + 'px';
-  el.style.top   = (y - 20) + 'px';
-  el.style.fontSize = '26px';
+  el.style.cssText = `left:${x-20}px;top:${y-20}px;font-size:26px;`;
   document.getElementById('game-screen').appendChild(el);
   setTimeout(() => el.remove(), 800);
 }
 
-// ============================================================
-// 停止函數
-// ============================================================
 function stopSpawning() { clearTimeout(state.spawnTimer); state.spawnTimer = null; }
-
-function stopSpeech() {
-  if (state.recognition) { try { state.recognition.stop(); } catch(e) {} state.recognition = null; }
-}
-
+function stopSpeech()   { if (state.recognition) { try { state.recognition.stop(); } catch(e){} state.recognition = null; } }
 function stopGame() {
   state.gameRunning = false;
   stopSpawning(); stopSpeech(); clearInterval(state.gameTimer);
   state.tiles.forEach(t => { try { t.el.remove(); } catch(e){} });
   state.tiles = [];
-  document.querySelectorAll('.kana-tile').forEach(t => t.remove());
-  document.querySelectorAll('.judge-popup').forEach(t => t.remove());
+  document.querySelectorAll('.kana-tile, .judge-popup').forEach(t => t.remove());
   document.getElementById('attack-beam').style.display = 'none';
 }
-
 function hideAllOverlays() {
   ['start-message','clear-message','gameover-message'].forEach(id => {
     const el = document.getElementById(id);
-    el.style.opacity = '0';
-    el.classList.remove('show');
+    el.style.opacity = '0'; el.classList.remove('show');
   });
 }
-
 function setVoiceStatus(cls, text) {
   const el = document.getElementById('voice-status');
-  el.className   = cls;
-  el.textContent = text;
+  el.className = cls; el.textContent = text;
 }
 
 // ============================================================
