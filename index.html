@@ -5,197 +5,228 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>芙莉蓮の五十音バトル</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700;900&family=Cinzel+Decorative:wght@700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700;900&display=swap');
 
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body { background:#000; overflow:hidden; width:100vw; height:100vh; font-family:'Noto Serif JP',serif; }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#000; overflow:hidden; width:100vw; height:100vh; font-family:'Noto Serif JP',serif; }
 
-  #rotate-notice {
-    display:none; position:fixed; inset:0; background:#0a0a1a; z-index:9999;
-    flex-direction:column; align-items:center; justify-content:center; color:#fff; gap:20px;
-  }
-  #rotate-notice .rotate-icon { font-size:60px; animation:rotateHint 2s ease-in-out infinite; }
-  #rotate-notice p { font-size:18px; color:#aaa; }
-  @keyframes rotateHint { 0%,100%{transform:rotate(0deg)} 50%{transform:rotate(90deg)} }
+/* ===== 橫向提示 ===== */
+#rotate-notice {
+  display:none; position:fixed; inset:0; background:#0a0a1a; z-index:9999;
+  flex-direction:column; align-items:center; justify-content:center; color:#fff; gap:20px;
+}
+#rotate-notice .icon { font-size:60px; animation:rotHint 2s ease-in-out infinite; }
+@keyframes rotHint { 0%,100%{transform:rotate(0deg)} 50%{transform:rotate(90deg)} }
 
-  #game-wrapper {
-    position:fixed; top:0; left:0; width:100%; height:100%;
-    display:flex; align-items:center; justify-content:center; background:#000;
-  }
-  #game-canvas { position:relative; overflow:hidden; background:#000; }
+/* ===== 外層容器 ===== */
+#game-wrapper {
+  position:fixed; top:0; left:0; width:100%; height:100%;
+  display:flex; align-items:center; justify-content:center; background:#111;
+}
+#game-canvas {
+  position:relative; overflow:hidden;
+  display:flex; flex-direction:row;
+}
 
-  .screen { position:absolute; inset:0; display:none; }
-  .screen.active { display:block; }
+/* ===== 標題畫面（全寬）===== */
+#title-screen {
+  position:absolute; inset:0; display:none;
+  background-size:cover; background-position:center; z-index:10;
+}
+#title-screen.active { display:flex; flex-direction:column; align-items:center; justify-content:center; }
+#title-screen .overlay { position:absolute; inset:0; background:linear-gradient(to bottom,rgba(0,0,0,0.3),rgba(0,0,0,0.65)); }
+#title-screen .content { position:relative; z-index:2; display:flex; flex-direction:column; align-items:center; gap:0; }
+.game-title-jp { font-weight:900; color:#fff; text-shadow:0 0 20px #c4b5fd,0 0 40px #7c3aed,2px 2px 0 #000; margin-bottom:6px; }
+.subtitle-txt { color:#e9d5ff; letter-spacing:3px; text-shadow:0 0 10px #a78bfa; margin-bottom:28px; }
+.diff-label { color:#d8b4fe; letter-spacing:6px; margin-bottom:18px; text-shadow:0 0 8px #a78bfa; }
+.btn-group { display:flex; flex-direction:column; align-items:center; gap:12px; }
+.diff-btn {
+  border:none; cursor:pointer; border-radius:4px;
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Noto Serif JP',serif; font-weight:700; color:#fff; letter-spacing:4px;
+  text-shadow:1px 1px 2px #000; transition:transform 0.15s, filter 0.15s;
+}
+.diff-btn:hover  { transform:scale(1.05); filter:brightness(1.15); }
+.diff-btn:active { transform:scale(0.97); }
+.btn-b1 { background:linear-gradient(135deg,#1e40af,#3b82f6,#93c5fd); box-shadow:0 4px 20px rgba(59,130,246,0.5); }
+.btn-b2 { background:linear-gradient(135deg,#065f46,#10b981,#6ee7b7); box-shadow:0 4px 20px rgba(16,185,129,0.5); }
+.btn-adv{ background:linear-gradient(135deg,#7c2d12,#dc2626,#fca5a5); box-shadow:0 4px 20px rgba(220,38,38,0.5); }
+.btn-lv { background:linear-gradient(135deg,#374151,#6b7280,#d1d5db); box-shadow:0 4px 20px rgba(107,114,128,0.4); }
 
-  /* ===== 標題畫面 ===== */
-  #title-screen { background-size:cover; background-position:center; }
-  #title-screen .overlay { position:absolute; inset:0; background:linear-gradient(to bottom,rgba(0,0,0,0.3),rgba(0,0,0,0.6)); }
-  #title-screen .content { position:relative; z-index:2; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; }
-  .game-title .jp { font-family:'Noto Serif JP',serif; font-weight:900; display:block; font-size:44px; text-shadow:0 0 20px #c4b5fd,0 0 40px #7c3aed,2px 2px 0 #000; color:#fff; margin-bottom:6px; }
-  .subtitle-text { color:#e9d5ff; font-size:16px; letter-spacing:3px; text-shadow:0 0 10px #a78bfa; margin-bottom:28px; }
-  .difficulty-label { color:#d8b4fe; font-size:14px; letter-spacing:6px; margin-bottom:18px; text-shadow:0 0 8px #a78bfa; }
-  .btn-group { display:flex; flex-direction:column; align-items:center; gap:12px; }
-  .diff-btn {
-    border:none; cursor:pointer; border-radius:4px;
-    display:flex; align-items:center; justify-content:center;
-    font-family:'Noto Serif JP',serif; font-weight:700; color:#fff; letter-spacing:4px; font-size:18px;
-    text-shadow:1px 1px 2px #000; transition:transform 0.15s, filter 0.15s;
-  }
-  .diff-btn:hover  { transform:scale(1.05); filter:brightness(1.15); }
-  .diff-btn:active { transform:scale(0.97); }
-  .btn-beginner1 { background:linear-gradient(135deg,#1e40af,#3b82f6,#93c5fd); box-shadow:0 4px 20px rgba(59,130,246,0.5); }
-  .btn-beginner2 { background:linear-gradient(135deg,#065f46,#10b981,#6ee7b7); box-shadow:0 4px 20px rgba(16,185,129,0.5); }
-  .btn-advanced  { background:linear-gradient(135deg,#7c2d12,#dc2626,#fca5a5); box-shadow:0 4px 20px rgba(220,38,38,0.5); }
-  .btn-leave     { background:linear-gradient(135deg,#374151,#6b7280,#d1d5db); box-shadow:0 4px 20px rgba(107,114,128,0.4); }
+/* ===== 遊戲左側：主畫面 ===== */
+#game-left {
+  position:relative; overflow:hidden; flex-shrink:0;
+  background-size:cover; background-position:center;
+}
 
-  /* ===== 遊戲畫面 ===== */
-  #game-screen { background-size:cover; background-position:center; }
+/* 判定線 */
+#judge-line {
+  position:absolute; top:0; bottom:0; width:3px; z-index:20; pointer-events:none;
+  background:repeating-linear-gradient(to bottom,rgba(255,255,100,0.9) 0,rgba(255,255,100,0.9) 12px,transparent 12px,transparent 20px);
+  box-shadow:0 0 8px rgba(255,255,100,0.6),0 0 16px rgba(255,255,100,0.3);
+}
 
-  #judge-line {
-    position:absolute; top:0; bottom:0; width:3px; z-index:20; pointer-events:none;
-    background:repeating-linear-gradient(to bottom,rgba(255,255,100,0.9) 0px,rgba(255,255,100,0.9) 12px,transparent 12px,transparent 20px);
-    box-shadow:0 0 8px rgba(255,255,100,0.6),0 0 16px rgba(255,255,100,0.3);
-  }
+/* 角色 */
+#character { position:absolute; z-index:30; pointer-events:none; }
+#character img { display:block; filter:drop-shadow(0 4px 8px rgba(0,0,0,0.5)); }
+#character.hit   { animation:hitFlash 1s ease; }
+#character.clear { animation:clearBounce 2s ease; }
+@keyframes hitFlash {
+  0%,100%{opacity:1;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.5))}
+  25%,75%{opacity:0.2;filter:drop-shadow(0 0 14px rgba(255,50,50,1))}
+}
+@keyframes clearBounce {
+  0%,100%{transform:translateY(0)} 25%{transform:translateY(-28px)} 50%{transform:translateY(-8px)} 75%{transform:translateY(-18px)}
+}
 
-  #character { position:absolute; z-index:30; pointer-events:none; }
-  #character img { display:block; filter:drop-shadow(0 4px 8px rgba(0,0,0,0.5)); }
-  #character.hit   { animation:hitFlash 1s ease; }
-  #character.clear { animation:clearBounce 2s ease; }
-  @keyframes hitFlash {
-    0%,100%{opacity:1} 20%,60%{opacity:0.2;filter:drop-shadow(0 0 12px rgba(255,50,50,1))} 40%,80%{opacity:1}
-  }
-  @keyframes clearBounce {
-    0%,100%{transform:translateY(0)} 25%{transform:translateY(-30px)} 50%{transform:translateY(-10px)} 75%{transform:translateY(-20px)}
-  }
+/* 魔法光束 */
+#attack-beam { position:absolute; z-index:25; pointer-events:none; display:none; transform-origin:left center; }
+#attack-beam img { width:100%; height:100%; object-fit:fill; }
 
-  #attack-beam { position:absolute; z-index:25; pointer-events:none; display:none; transform-origin:left center; }
-  #attack-beam img { width:100%; height:100%; object-fit:fill; }
+/* 五十音圖案 */
+.kana-tile { position:absolute; z-index:15; display:flex; align-items:center; justify-content:center; pointer-events:none; }
+.kana-tile .frame-img { position:absolute; inset:0; width:100%; height:100%; object-fit:contain; }
+.kana-tile .kana-text {
+  position:relative; z-index:2; font-family:'Noto Serif JP',serif; font-weight:900; color:#fff; line-height:1; user-select:none;
+  text-shadow:3px 3px 0 #000,-3px -3px 0 #000,3px -3px 0 #000,-3px 3px 0 #000,0 0 12px rgba(220,180,255,0.9);
+}
+/* 目標圖案（最靠近判定線的）高亮 */
+.kana-tile.target .frame-img { filter:brightness(1.4) drop-shadow(0 0 8px rgba(255,220,80,0.9)); }
+.kana-tile.success { animation:kanaOK 0.4s ease forwards; }
+.kana-tile.fail    { animation:kanaFail 0.5s ease forwards; }
+@keyframes kanaOK   { 0%{opacity:1;transform:scale(1)} 40%{transform:scale(1.3);filter:brightness(3)} 100%{opacity:0;transform:scale(0)} }
+@keyframes kanaFail { 0%{transform:scale(1);opacity:1} 30%{transform:scale(1.3);filter:hue-rotate(180deg) brightness(1.5)} 60%{transform:scale(0.8) translateX(-8px)} 100%{transform:scale(0);opacity:0} }
 
-  /* ===== 五十音圖案 ===== */
-  .kana-tile { position:absolute; z-index:15; display:flex; align-items:center; justify-content:center; pointer-events:none; }
-  .kana-tile .frame-img { position:absolute; inset:0; width:100%; height:100%; object-fit:contain; }
-  .kana-tile .kana-text {
-    position:relative; z-index:2; font-family:'Noto Serif JP',serif; font-weight:900; color:#fff; font-size:52px; line-height:1; user-select:none;
-    text-shadow:3px 3px 0 #000,-3px -3px 0 #000,3px -3px 0 #000,-3px 3px 0 #000,0 0 12px rgba(220,180,255,0.9);
-  }
-  .kana-tile.success { animation:kanaSuccess 0.4s ease forwards; }
-  .kana-tile.fail    { animation:kanaFail 0.5s ease forwards; }
-  @keyframes kanaSuccess {
-    0%{opacity:1;transform:scale(1)} 30%{opacity:1;transform:scale(1.3);filter:brightness(3)} 100%{opacity:0;transform:scale(0)}
-  }
-  @keyframes kanaFail {
-    0%{transform:scale(1);opacity:1} 25%{transform:scale(1.3);filter:hue-rotate(180deg) brightness(1.5)}
-    50%{transform:scale(0.8) translateX(-8px)} 75%{transform:scale(1.1) translateX(8px)}
-    100%{transform:scale(0);opacity:0}
-  }
+/* HUD */
+#hud {
+  position:absolute; top:0; left:0; right:0; z-index:40; pointer-events:none;
+  display:flex; align-items:flex-start; justify-content:space-between; padding:8px 12px;
+  background:linear-gradient(to bottom,rgba(0,0,0,0.65),transparent);
+}
+#hearts-container { display:flex; gap:4px; align-items:center; }
+.heart { font-size:24px; color:#ff3366; filter:drop-shadow(0 0 4px rgba(255,50,100,0.7)); transition:all 0.3s; }
+.heart.lost { color:#333; filter:none; opacity:0.4; }
+#timer-display { font-family:'Noto Serif JP',serif; font-weight:900; color:#fff; text-shadow:0 0 10px rgba(200,150,255,0.8),1px 1px 2px #000; letter-spacing:2px; }
+#timer-display.urgent { color:#ff6666; animation:timerPulse 0.5s ease infinite; }
+@keyframes timerPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
+#difficulty-badge { font-family:'Noto Serif JP',serif; font-weight:700; color:#d8b4fe; letter-spacing:2px; text-shadow:0 0 8px rgba(167,139,250,0.6),1px 1px 2px #000; }
 
-  /* ===== HUD ===== */
-  #hud {
-    position:absolute; top:0; left:0; right:0; z-index:40; pointer-events:none;
-    display:flex; align-items:flex-start; justify-content:space-between; padding:10px 16px;
-    background:linear-gradient(to bottom,rgba(0,0,0,0.65),transparent);
-  }
-  #hearts-container { display:flex; gap:6px; align-items:center; }
-  .heart { font-size:28px; color:#ff3366; filter:drop-shadow(0 0 4px rgba(255,50,100,0.7)); transition:all 0.3s; }
-  .heart.lost { color:#333; filter:none; opacity:0.4; }
-  #timer-display { font-family:'Noto Serif JP',serif; font-weight:900; font-size:32px; color:#fff; text-shadow:0 0 10px rgba(200,150,255,0.8),1px 1px 2px #000; letter-spacing:2px; }
-  #timer-display.urgent { color:#ff6666; animation:timerPulse 0.5s ease infinite; }
-  @keyframes timerPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
-  #difficulty-badge { font-family:'Noto Serif JP',serif; font-weight:700; font-size:14px; color:#d8b4fe; letter-spacing:2px; text-shadow:0 0 8px rgba(167,139,250,0.6),1px 1px 2px #000; }
+/* 覆蓋訊息 */
+.overlay-msg {
+  position:absolute; inset:0; z-index:50; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; pointer-events:none; opacity:0; transition:opacity 0.3s;
+}
+.overlay-msg.show { pointer-events:auto; opacity:1; }
+#start-msg-wrap  { background:radial-gradient(ellipse at center,rgba(124,58,237,0.45),transparent 70%); }
+#clear-msg-wrap  { background:radial-gradient(ellipse at center,rgba(16,185,129,0.35),transparent 70%); }
+#over-msg-wrap   { background:radial-gradient(ellipse at center,rgba(220,38,38,0.35),transparent 70%); }
+.msg-text { font-family:'Noto Serif JP',serif; font-weight:900; color:#fff; letter-spacing:6px; }
+#start-msg { text-shadow:0 0 20px #a78bfa,0 0 40px #7c3aed,2px 2px 0 #000; animation:startAnim 2.5s ease forwards; }
+@keyframes startAnim { 0%{opacity:0;transform:scale(0.5)} 30%{opacity:1;transform:scale(1)} 80%{opacity:1;transform:scale(1)} 100%{opacity:0;transform:scale(1.3)} }
+#clear-msg  { text-shadow:0 0 20px #6ee7b7,0 0 40px #10b981,2px 2px 0 #000; animation:clearFlash 1.5s ease infinite; }
+@keyframes clearFlash { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05);filter:brightness(1.3)} }
+#over-msg   { color:#ff6666; text-shadow:0 0 20px #ef4444,0 0 40px #dc2626,2px 2px 0 #000; }
+.back-btn {
+  margin-top:24px; padding:10px 36px; background:rgba(255,255,255,0.15);
+  border:2px solid rgba(255,255,255,0.5); border-radius:6px; color:#fff;
+  font-family:'Noto Serif JP',serif; font-weight:700; letter-spacing:4px;
+  cursor:pointer; transition:all 0.2s; pointer-events:auto; text-shadow:1px 1px 2px #000;
+}
+.back-btn:hover { background:rgba(255,255,255,0.3); transform:scale(1.05); }
 
-  /* ===== 語音按鈕（底部）===== */
-  #voice-bar {
-    position:absolute; bottom:0; left:0; right:0; z-index:40;
-    display:flex; align-items:center; justify-content:center; gap:14px; padding:8px 16px 10px;
-    background:linear-gradient(to top,rgba(0,0,0,0.65),transparent);
-    pointer-events:auto;
-  }
-  #hold-btn {
-    padding:9px 32px; border-radius:50px; border:2px solid rgba(196,181,253,0.8);
-    background:rgba(109,40,217,0.45); color:#fff;
-    font-family:'Noto Serif JP',serif; font-weight:700; font-size:15px; letter-spacing:2px;
-    cursor:pointer; user-select:none; -webkit-user-select:none; touch-action:none;
-    text-shadow:1px 1px 2px #000; transition:background 0.12s, transform 0.1s;
-  }
-  #hold-btn.on {
-    background:rgba(220,38,38,0.7); border-color:#fca5a5;
-    transform:scale(0.95); box-shadow:0 0 14px rgba(220,38,38,0.6);
-  }
-  #voice-heard { display:none; }
-  #voice-hint { font-size:12px; color:rgba(255,255,255,0.5); letter-spacing:1px; }
+/* 判定浮現 */
+.judge-popup { position:absolute; z-index:45; font-family:'Noto Serif JP',serif; font-weight:900; pointer-events:none; animation:judgePopup 0.8s ease forwards; }
+.judge-popup.ok   { color:#86efac; text-shadow:0 0 10px #22c55e; }
+.judge-popup.miss { color:#fca5a5; text-shadow:0 0 10px #ef4444; }
+@keyframes judgePopup { 0%{opacity:1;transform:translateY(0) scale(1)} 100%{opacity:0;transform:translateY(-40px) scale(1.3)} }
 
-  /* ===== 覆蓋訊息 ===== */
-  .overlay-message {
-    position:absolute; inset:0; z-index:50; display:flex; flex-direction:column;
-    align-items:center; justify-content:center; pointer-events:none; opacity:0;
-  }
-  .overlay-message.show { pointer-events:auto; }
-  #start-message { background:radial-gradient(ellipse at center,rgba(124,58,237,0.4),transparent 70%); }
-  #start-message .msg-text { font-family:'Noto Serif JP',serif; font-weight:900; font-size:56px; color:#fff; letter-spacing:8px; text-shadow:0 0 20px #a78bfa,0 0 40px #7c3aed,2px 2px 0 #000; }
-  #clear-message { background:radial-gradient(ellipse at center,rgba(16,185,129,0.3),transparent 70%); }
-  #clear-message .msg-text { font-family:'Noto Serif JP',serif; font-weight:900; font-size:60px; color:#fff; letter-spacing:6px; text-shadow:0 0 20px #6ee7b7,0 0 40px #10b981,2px 2px 0 #000; animation:clearFlash 2s ease infinite; }
-  @keyframes clearFlash { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05);text-shadow:0 0 50px #6ee7b7,0 0 80px #10b981,2px 2px 0 #000} }
-  #gameover-message { background:radial-gradient(ellipse at center,rgba(220,38,38,0.3),transparent 70%); }
-  #gameover-message .msg-text { font-family:'Noto Serif JP',serif; font-weight:900; font-size:60px; color:#ff6666; letter-spacing:4px; text-shadow:0 0 20px #ef4444,0 0 40px #dc2626,2px 2px 0 #000; animation:gameoverShake 0.4s ease 0.3s; }
-  @keyframes gameoverShake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
-  .back-btn {
-    margin-top:28px; padding:12px 40px; background:rgba(255,255,255,0.15); border:2px solid rgba(255,255,255,0.5);
-    border-radius:6px; color:#fff; font-family:'Noto Serif JP',serif; font-weight:700; font-size:16px;
-    letter-spacing:4px; cursor:pointer; backdrop-filter:blur(4px); transition:all 0.2s; pointer-events:auto; text-shadow:1px 1px 2px #000;
-  }
-  .back-btn:hover { background:rgba(255,255,255,0.3); border-color:#fff; transform:scale(1.05); }
+/* ===== 遊戲右側：鍵盤區 ===== */
+#game-right {
+  flex-shrink:0; display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  background:rgba(10,10,30,0.92); border-left:1px solid rgba(139,92,246,0.3);
+  gap:0; padding:0 8px;
+}
 
-  /* 判定浮現 */
-  .judge-popup { position:absolute; z-index:45; font-family:'Noto Serif JP',serif; font-weight:900; pointer-events:none; animation:judgePopup 0.8s ease forwards; }
-  .judge-popup.ok   { color:#86efac; text-shadow:0 0 10px #22c55e; }
-  .judge-popup.miss { color:#fca5a5; text-shadow:0 0 10px #ef4444; }
-  @keyframes judgePopup { 0%{opacity:1;transform:translateY(0) scale(1)} 100%{opacity:0;transform:translateY(-40px) scale(1.3)} }
+/* 輸入顯示 */
+#input-display {
+  display:flex; flex-direction:column; align-items:center; width:100%; margin-bottom:6px; gap:3px;
+}
+#current-target {
+  font-family:'Noto Serif JP',serif; font-weight:900; color:#fde68a;
+  text-shadow:0 0 10px #fbbf24; letter-spacing:2px; text-align:center;
+}
+#input-buffer {
+  font-family:monospace; font-weight:700; color:#a78bfa; letter-spacing:3px;
+  text-align:center; min-height:1.2em;
+  background:rgba(109,40,217,0.2); border:1px solid rgba(139,92,246,0.4);
+  border-radius:6px; padding:2px 10px; width:90%;
+}
+#input-hint { font-size:11px; color:rgba(255,255,255,0.4); letter-spacing:1px; text-align:center; }
+
+/* 鍵盤 */
+#keyboard { display:flex; flex-direction:column; align-items:center; gap:4px; width:100%; }
+.key-row { display:flex; justify-content:center; gap:4px; }
+.key {
+  border:none; border-radius:6px; cursor:pointer; font-weight:700; color:#fff;
+  background:rgba(109,40,217,0.4); border:1px solid rgba(139,92,246,0.5);
+  transition:transform 0.08s, background 0.08s; text-shadow:1px 1px 2px #000;
+  font-family:monospace; letter-spacing:1px;
+  display:flex; align-items:center; justify-content:center;
+  user-select:none; -webkit-user-select:none; touch-action:manipulation;
+}
+.key:active, .key.pressed { background:rgba(220,38,38,0.7); transform:scale(0.9); border-color:#fca5a5; }
+.key.correct  { background:rgba(34,197,94,0.7) !important; }
+.key-del {
+  background:rgba(55,65,81,0.6); border-color:rgba(107,114,128,0.5); font-size:13px;
+}
 </style>
 </head>
 <body>
 
 <div id="rotate-notice">
-  <div class="rotate-icon">📱</div>
-  <p>デバイスを横向きにしてください</p>
-  <p style="font-size:14px;color:#666;">Please rotate your device to landscape</p>
+  <div class="icon">📱</div>
+  <p style="font-size:18px;color:#aaa;">デバイスを横向きにしてください</p>
 </div>
 
 <div id="game-wrapper">
   <div id="game-canvas">
 
-    <!-- 標題畫面 -->
-    <div id="title-screen" class="screen active">
+    <!-- 標題畫面（全寬覆蓋）-->
+    <div id="title-screen" class="active">
       <div class="overlay"></div>
       <div class="content">
-        <div class="game-title"><span class="jp">芙莉蓮の五十音バトル</span></div>
-        <div class="subtitle-text">～ 声で魔法を放て ～</div>
-        <div class="difficulty-label">難度を選んでください</div>
+        <div class="game-title-jp" id="title-txt">芙莉蓮の五十音バトル</div>
+        <div class="subtitle-txt">～ 声で魔法を放て ～</div>
+        <div class="diff-label">難度を選んでください</div>
         <div class="btn-group" id="btn-group"></div>
       </div>
     </div>
 
-    <!-- 遊戲畫面 -->
-    <div id="game-screen" class="screen">
+    <!-- 左側：遊戲主畫面 -->
+    <div id="game-left">
       <div id="judge-line"></div>
       <div id="character"><img id="char-img" src="images/frierenstand.png" alt=""></div>
       <div id="attack-beam"><img src="images/attackeffect.png" alt=""></div>
-
       <div id="hud">
         <div id="hearts-container"></div>
         <div id="timer-display">2:00</div>
         <div id="difficulty-badge"></div>
       </div>
+      <!-- 覆蓋訊息 -->
+      <div id="start-msg-wrap"  class="overlay-msg"><div class="msg-text" id="start-msg">ゲームスタート</div></div>
+      <div id="clear-msg-wrap"  class="overlay-msg"><div class="msg-text" id="clear-msg">ゲームクリア！</div><button class="back-btn" onclick="goTitle()">タイトルへ戻る</button></div>
+      <div id="over-msg-wrap"   class="overlay-msg"><div class="msg-text" id="over-msg">ゲームオーバー</div><button class="back-btn" onclick="goTitle()">タイトルへ戻る</button></div>
+    </div>
 
-      <!-- 語音按鈕 -->
-      <div id="voice-bar">
-        <span id="voice-hint">押している間、話す</span>
-        <button id="hold-btn">🎤 押して話す</button>
-        <span id="voice-heard"></span>
+    <!-- 右側：鍵盤區 -->
+    <div id="game-right">
+      <div id="input-display">
+        <div id="current-target">　</div>
+        <div id="input-buffer"></div>
+        <div id="input-hint">ローマ字を入力</div>
       </div>
-
-      <div id="start-message"    class="overlay-message"><div class="msg-text">ゲームスタート</div></div>
-      <div id="clear-message"    class="overlay-message"><div class="msg-text">ゲームクリア！</div><button class="back-btn" onclick="goTitle()">タイトルへ戻る</button></div>
-      <div id="gameover-message" class="overlay-message"><div class="msg-text">ゲームオーバー</div><button class="back-btn" onclick="goTitle()">タイトルへ戻る</button></div>
+      <div id="keyboard"></div>
     </div>
 
   </div>
@@ -203,54 +234,25 @@
 
 <script>
 // ============================================================
-// 五十音辨識關鍵字（含常見漢字誤判）
+// 羅馬字對應表（每個假名 → 接受的羅馬字寫法）
 // ============================================================
-const KANA_DATA = {
-  'あ': ['あ','ア','a','亜','阿','顔','愛','会','阿'],
-  'い': ['い','イ','i','以','位','意','伊','胃','異','医'],
-  'う': ['う','ウ','u','有','宇','烏','雨','右','得'],
-  'え': ['え','エ','e','絵','江','枝','恵','衛','餌'],
-  'お': ['お','オ','o','於','雄','緒','男','尾'],
-  'か': ['か','カ','ka','可','火','花','下','課','香','歌','家','蚊'],
-  'き': ['き','キ','ki','木','気','機','企','基','記','期','危'],
-  'く': ['く','ク','ku','九','苦','句','区','駆','口','来'],
-  'け': ['け','ケ','ke','毛','消','怪','欠','決','計','蹴'],
-  'こ': ['こ','コ','ko','子','古','故','語','弧','個','顔','声','越','来'],
-  'さ': ['さ','サ','sa','差','砂','左','作','早','沙','朔'],
-  'し': ['し','シ','si','shi','死','詞','師','思','詩','止','紙','市','糸'],
-  'す': ['す','ス','su','素','数','酢','州','巣','好き','過ぎ','透'],
-  'せ': ['せ','セ','se','背','世','瀬','節','是','性','制','誓'],
-  'そ': ['そ','ソ','so','祖','素','組','側','卒','層','底'],
-  'た': ['た','タ','ta','多','他','打','太','田','達','食べ'],
-  'ち': ['ち','チ','ti','chi','地','知','血','乳','竹','近','違'],
-  'つ': ['つ','ツ','tu','tsu','都','痛','翼','漬','着','強','続'],
-  'て': ['て','テ','te','手','天','転','鉄','定','低','出','停'],
-  'と': ['と','ト','to','十','都','戸','時','取','問','透','飛'],
-  'な': ['な','ナ','na','名','何','納','涙','並','慣れ','無'],
-  'に': ['に','ニ','ni','二','荷','似','煮','担','日','逃'],
-  'ぬ': ['ぬ','ヌ','nu','沼','縫','抜','温','盗'],
-  'ね': ['ね','ネ','ne','音','根','値','猫','寝','熱','年'],
-  'の': ['の','ノ','no','野','農','飲','乗','残','延'],
-  'は': ['は','ハ','ha','葉','派','波','刃','端','話','花','歯'],
-  'ひ': ['ひ','ヒ','hi','日','火','比','飛','非','被','悲','引'],
-  'ふ': ['ふ','フ','fu','hu','不','布','付','府','風','踏','増'],
-  'へ': ['へ','ヘ','he','部','変','返','遍','辺','経'],
-  'ほ': ['ほ','ホ','ho','本','歩','保','星','法','欲'],
-  'ま': ['ま','マ','ma','間','前','巻','満','枚','待','任'],
-  'み': ['み','ミ','mi','見','身','水','実','未','皆','路'],
-  'む': ['む','ム','mu','無','夢','娘','向','蒸','胸','結'],
-  'め': ['め','メ','me','目','芽','銘','命','迷','面','雌'],
-  'も': ['も','モ','mo','物','者','文','模','茂','求'],
-  'や': ['や','ヤ','ya','屋','野','矢','役','焼','薬','彌'],
-  'ゆ': ['ゆ','ユ','yu','湯','夢','指','勇','遊','由','唯'],
-  'よ': ['よ','ヨ','yo','世','夜','横','様','用','預','酔','読'],
-  'ら': ['ら','ラ','ra','等','楽','裸','来','乱','落','良'],
-  'り': ['り','リ','ri','利','里','理','離','律','粒'],
-  'る': ['る','ル','ru','留','流','縷','塁','涙','類'],
-  'れ': ['れ','レ','re','零','例','礼','連','烈','恋'],
-  'ろ': ['ろ','ロ','ro','路','露','労','論','六','廊'],
-  'わ': ['わ','ワ','wa','和','話','輪','笑','若','技'],
-  'を': ['を','ウォ','o','wo','オ','お','置','男','追'],
+const ROMAJI = {
+  'あ':'a',  'い':'i',  'う':'u',  'え':'e',  'お':'o',
+  'か':'ka', 'き':'ki', 'く':'ku', 'け':'ke', 'こ':'ko',
+  'さ':'sa', 'し':'si', 'す':'su', 'せ':'se', 'そ':'so',
+  'た':'ta', 'ち':'ti', 'つ':'tu', 'て':'te', 'と':'to',
+  'な':'na', 'に':'ni', 'ぬ':'nu', 'ね':'ne', 'の':'no',
+  'は':'ha', 'ひ':'hi', 'ふ':'hu', 'へ':'he', 'ほ':'ho',
+  'ま':'ma', 'み':'mi', 'む':'mu', 'め':'me', 'も':'mo',
+  'や':'ya', 'ゆ':'yu', 'よ':'yo',
+  'ら':'ra', 'り':'ri', 'る':'ru', 'れ':'re', 'ろ':'ro',
+  'わ':'wa', 'を':'o',
+};
+
+// 允許的替代寫法
+const ROMAJI_ALT = {
+  'し':['si','shi'], 'ち':['ti','chi'], 'つ':['tu','tsu'],
+  'ふ':['hu','fu'],  'を':['o','wo'],
 };
 
 // ============================================================
@@ -258,137 +260,187 @@ const KANA_DATA = {
 // ============================================================
 const DIFFICULTY = {
   beginner1: {
-    label: '初級 I',
-    kana: ['あ','い','う','え','お','か','き','く','け','こ','さ','し','す','せ','そ','た','ち','つ','て','と'],
-    totalTiles: 40,
-    speed: 55,       // px/秒
-    interval: 2200,  // 圖案生成間隔 ms
-    missPixels: 110, // 超過判定線左方這個距離才MISS
+    label:'初級 I',
+    kana:['あ','い','う','え','お','か','き','く','け','こ','さ','し','す','せ','そ','た','ち','つ','て','と'],
+    totalTiles:40, speed:55, interval:2400,
+    missPixels:80,   // 圖案超過判定線左方這個距離 → MISS
   },
   beginner2: {
-    label: '初級 II',
-    kana: ['な','に','ぬ','ね','の','は','ひ','ふ','へ','ほ','ま','み','む','め','も','や','ゆ','よ','ら','り','る','れ','ろ','わ','を'],
-    totalTiles: 40,
-    speed: 60,
-    interval: 2200,
-    missPixels: 110,
+    label:'初級 II',
+    kana:['な','に','ぬ','ね','の','は','ひ','ふ','へ','ほ','ま','み','む','め','も','や','ゆ','よ','ら','り','る','れ','ろ','わ','を'],
+    totalTiles:40, speed:60, interval:2400,
+    missPixels:80,
   },
   advanced: {
-    label: '進階',
-    kana: ['あ','い','う','え','お','か','き','く','け','こ','さ','し','す','せ','そ','た','ち','つ','て','と','な','に','ぬ','ね','の','は','ひ','ふ','へ','ほ','ま','み','む','め','も','や','ゆ','よ','ら','り','る','れ','ろ','わ','を'],
-    totalTiles: 40,
-    speed: 75,
-    interval: 1800,
-    missPixels: 90,
+    label:'進階',
+    kana:['あ','い','う','え','お','か','き','く','け','こ','さ','し','す','せ','そ','た','ち','つ','て','と','な','に','ぬ','ね','の','は','ひ','ふ','へ','ほ','ま','み','む','め','も','や','ゆ','よ','ら','り','る','れ','ろ','わ','を'],
+    totalTiles:40, speed:75, interval:2000,
+    missPixels:70,
   }
 };
+
+// ============================================================
+// 版面尺寸（由 JS 計算）
+// ============================================================
+let GAME_W, GAME_H, KBD_W, TOTAL_W;
+const BASE_GAME_H = 600;
+const CHAR_W=170, CHAR_H=240, CHAR_X=5, CHAR_BOTTOM=8;
+let JUDGE_X;
+const TILE_SIZE=100;
+const TILE_MIN_Y=50, TILE_MAX_Y=BASE_GAME_H-TILE_SIZE-50;
 
 // ============================================================
 // 遊戲狀態
 // ============================================================
 let state = {
-  phase: 'title',
-  difficulty: null,
-  hearts: 6,
-  timeLeft: 120,
-  tiles: [],
-  spawnTimer: null,
-  gameTimer: null,
-  spawnQueue: [],
-  spawnIndex: 0,
-  recognition: null,
-  isListening: false,
-  gameRunning: false,
-  // 按住說話：目前收到的候選詞
-  liveTranscripts: [],
+  phase:'title', difficulty:null,
+  hearts:6, timeLeft:120,
+  tiles:[], spawnTimer:null, gameTimer:null,
+  spawnQueue:[], spawnIndex:0,
+  inputBuffer:'',   // 目前打入的羅馬字
+  gameRunning:false,
 };
 
 // ============================================================
 // RWD 縮放
 // ============================================================
-const BASE_W = 1280, BASE_H = 720;
-let scale = 1;
-
-function resizeGame() {
+function resize() {
   const ww = window.innerWidth, wh = window.innerHeight;
-  scale = Math.min(ww / BASE_W, wh / BASE_H);
+  // 鍵盤區固定寬度（依螢幕大小）
+  KBD_W = Math.min(Math.max(ww * 0.28, 180), 260);
+  GAME_W = ww - KBD_W;
+  GAME_H = wh;
+
   const canvas = document.getElementById('game-canvas');
-  canvas.style.width  = BASE_W + 'px';
-  canvas.style.height = BASE_H + 'px';
-  canvas.style.transform = `scale(${scale})`;
-  canvas.style.transformOrigin = 'center center';
+  canvas.style.width  = ww + 'px';
+  canvas.style.height = wh + 'px';
+
+  const left = document.getElementById('game-left');
+  left.style.width  = GAME_W + 'px';
+  left.style.height = GAME_H + 'px';
+
+  const right = document.getElementById('game-right');
+  right.style.width  = KBD_W + 'px';
+  right.style.height = GAME_H + 'px';
+
+  // 判定線位置
+  JUDGE_X = CHAR_X + CHAR_W + Math.round(GAME_W * 0.06);
+  document.getElementById('judge-line').style.left = JUDGE_X + 'px';
+
+  // 角色
+  const char = document.getElementById('character');
+  char.style.left   = CHAR_X + 'px';
+  char.style.bottom = CHAR_BOTTOM + 'px';
+  document.getElementById('char-img').style.cssText = `width:${CHAR_W}px;height:${CHAR_H}px;object-fit:contain;object-position:bottom center;`;
+
+  // HUD 字型
+  const hScale = GAME_H / 600;
+  document.getElementById('timer-display').style.fontSize    = Math.round(28*hScale) + 'px';
+  document.getElementById('difficulty-badge').style.fontSize = Math.round(12*hScale) + 'px';
+
+  // 標題畫面
+  const ts = document.getElementById('title-screen');
+  ts.style.cssText = `position:absolute;inset:0;z-index:10;background-size:cover;background-position:center;`;
+  if (ts.classList.contains('active')) ts.style.display = 'flex';
+
+  document.getElementById('title-txt').style.fontSize = Math.round(36*hScale) + 'px';
+
+  // 鍵盤尺寸
+  buildKeyboard();
   checkOrientation();
 }
+
 function checkOrientation() {
   document.getElementById('rotate-notice').style.display =
     (window.innerWidth < window.innerHeight && window.innerWidth < 900) ? 'flex' : 'none';
 }
-window.addEventListener('resize', resizeGame);
-window.addEventListener('orientationchange', () => setTimeout(resizeGame, 300));
-resizeGame();
+
+window.addEventListener('resize', resize);
+window.addEventListener('orientationchange', () => setTimeout(resize, 300));
 
 // ============================================================
-// 版面常數
+// 鍵盤建立
 // ============================================================
-const CHAR_W      = 190;
-const CHAR_H      = 260;
-const CHAR_X      = 5;
-const CHAR_BOTTOM = 10;
-const JUDGE_X     = CHAR_X + CHAR_W + 80;  // ≈ 275
-const TILE_SIZE   = 110;
-const TILE_SPAWN_X = BASE_W + TILE_SIZE;
-const TILE_MIN_Y  = 60;
-const TILE_MAX_Y  = BASE_H - TILE_SIZE - 80;
-// 判定窗口：圖案中心距判定線多近才能被語音比對
-const JUDGE_RANGE = 160; // px，判定線左右各 160px（約 3 秒緩衝）
+function buildKeyboard() {
+  const kbd = document.getElementById('keyboard');
+  kbd.innerHTML = '';
+
+  const rows = [
+    ['q','w','e','r','t','y','u','i','o','p'],
+    ['a','s','d','f','g','h','j','k','l'],
+    ['z','x','c','v','b','n','m','⌫'],
+  ];
+
+  // 計算按鍵大小
+  const maxRowLen = 10;
+  const gap = 4;
+  const keyW = Math.floor((KBD_W - gap*(maxRowLen+1)) / maxRowLen);
+  const keyH = Math.floor((GAME_H * 0.52) / 3);
+  const fontSize = Math.max(12, Math.min(18, Math.floor(keyW * 0.55)));
+
+  rows.forEach(row => {
+    const rowEl = document.createElement('div');
+    rowEl.className = 'key-row';
+    row.forEach(ch => {
+      const btn = document.createElement('button');
+      btn.className = 'key' + (ch === '⌫' ? ' key-del' : '');
+      btn.textContent = ch.toUpperCase();
+      btn.dataset.key = ch;
+      btn.style.cssText = `width:${keyW}px;height:${keyH}px;font-size:${fontSize}px;`;
+      btn.addEventListener('pointerdown', e => { e.preventDefault(); handleKey(ch); flashKey(btn); });
+      rowEl.appendChild(btn);
+    });
+    kbd.appendChild(rowEl);
+  });
+
+  // input-display 字型
+  const hScale = GAME_H / 600;
+  document.getElementById('current-target').style.fontSize = Math.round(22*hScale) + 'px';
+  document.getElementById('input-buffer').style.fontSize   = Math.round(18*hScale) + 'px';
+  document.getElementById('input-hint').style.fontSize     = Math.round(11*hScale) + 'px';
+}
+
+function flashKey(btn) {
+  btn.classList.add('pressed');
+  setTimeout(() => btn.classList.remove('pressed'), 150);
+}
 
 // ============================================================
 // 初始化
 // ============================================================
 function initTitle() {
   document.getElementById('title-screen').style.backgroundImage = "url('images/gamebeginingbackground.png')";
-  document.getElementById('game-screen').style.backgroundImage  = "url('images/gamebeginbackground.png')";
+  document.getElementById('game-left').style.backgroundImage    = "url('images/gamebeginbackground.png')";
 
-  const char = document.getElementById('character');
-  char.style.left   = CHAR_X + 'px';
-  char.style.bottom = CHAR_BOTTOM + 'px';
-  const ci = document.getElementById('char-img');
-  ci.style.width  = CHAR_W + 'px';
-  ci.style.height = CHAR_H + 'px';
-  ci.style.objectFit = 'contain';
-  ci.style.objectPosition = 'bottom center';
-
-  document.getElementById('judge-line').style.left = JUDGE_X + 'px';
-
-  buildButtons();
-}
-
-function buildButtons() {
   const g = document.getElementById('btn-group');
   g.innerHTML = '';
   [
-    {key:'beginner1',label:'初級 I', cls:'btn-beginner1',w:240,h:60},
-    {key:'beginner2',label:'初級 II',cls:'btn-beginner2',w:240,h:60},
-    {key:'advanced', label:'進階',   cls:'btn-advanced', w:240,h:60},
-    {key:'leave',    label:'離開',   cls:'btn-leave',    w:180,h:48},
+    {key:'beginner1',label:'初級 I', cls:'btn-b1', w:220,h:56},
+    {key:'beginner2',label:'初級 II',cls:'btn-b2', w:220,h:56},
+    {key:'advanced', label:'進階',   cls:'btn-adv',w:220,h:56},
+    {key:'leave',    label:'離開',   cls:'btn-lv', w:170,h:46},
   ].forEach(b => {
     const btn = document.createElement('button');
     btn.className = 'diff-btn ' + b.cls;
-    btn.style.cssText = `width:${b.w}px;height:${b.h}px;`;
+    btn.style.cssText = `width:${b.w}px;height:${b.h}px;font-size:17px;`;
     btn.textContent = b.label;
     btn.onclick = () => b.key === 'leave' ? window.close() : startGame(b.key);
     g.appendChild(btn);
   });
+
+  showTitleScreen(true);
+  resize();
 }
 
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
+function showTitleScreen(show) {
+  const ts = document.getElementById('title-screen');
+  if (show) { ts.classList.add('active'); ts.style.display='flex'; }
+  else       { ts.classList.remove('active'); ts.style.display='none'; }
 }
 
 function goTitle() {
   stopGame();
-  showScreen('title-screen');
+  showTitleScreen(true);
   state.phase = 'title';
 }
 
@@ -398,46 +450,36 @@ function goTitle() {
 function startGame(diffKey) {
   stopGame();
   Object.assign(state, {
-    difficulty: diffKey, hearts: 6, timeLeft: 120,
-    tiles: [], spawnIndex: 0, gameRunning: false,
-    liveTranscripts: [], isListening: false,
+    difficulty:diffKey, hearts:6, timeLeft:120,
+    tiles:[], spawnIndex:0, gameRunning:false,
+    inputBuffer:'',
   });
-  state.spawnQueue = buildSpawnQueue(diffKey);
+  state.spawnQueue = buildQueue(diffKey);
 
-  showScreen('game-screen');
+  showTitleScreen(false);
   hideAllOverlays();
   renderHearts();
   updateTimer();
   document.getElementById('difficulty-badge').textContent = DIFFICULTY[diffKey].label;
-  document.querySelectorAll('.kana-tile, .judge-popup').forEach(t => t.remove());
+  document.querySelectorAll('.kana-tile,.judge-popup').forEach(t=>t.remove());
   document.getElementById('attack-beam').style.display = 'none';
-  document.getElementById('voice-heard').textContent = '';
-  setCharState('stand');
-
-  initHoldButton();
-  showStartMessage();
+  document.getElementById('input-buffer').textContent = '';
+  document.getElementById('current-target').textContent = '　';
+  setChar('stand');
+  showStartMsg();
 }
 
-function buildSpawnQueue(diffKey) {
-  const kana = DIFFICULTY[diffKey].kana;
-  const total = DIFFICULTY[diffKey].totalTiles;
+function buildQueue(diffKey) {
+  const kana = DIFFICULTY[diffKey].kana, total = DIFFICULTY[diffKey].totalTiles;
   const q = [];
-  while (q.length < total) q.push(...[...kana].sort(() => Math.random() - 0.5));
+  while (q.length < total) q.push(...[...kana].sort(()=>Math.random()-0.5));
   return q.slice(0, total);
 }
 
-function showStartMessage() {
-  const msg = document.getElementById('start-message');
-  msg.style.opacity = '1';
-  msg.classList.add('show');
-  msg.querySelector('.msg-text').style.animation = 'none';
-  void msg.offsetWidth;
-  msg.querySelector('.msg-text').style.animation = 'startFadeIn 0.4s ease, startFadeOut 0.5s ease 2s forwards';
-  setTimeout(() => {
-    msg.style.opacity = '0';
-    msg.classList.remove('show');
-    beginGameplay();
-  }, 2500);
+function showStartMsg() {
+  const w = document.getElementById('start-msg-wrap');
+  w.classList.add('show');
+  setTimeout(() => { w.classList.remove('show'); beginGameplay(); }, 2500);
 }
 
 // ============================================================
@@ -453,70 +495,66 @@ function beginGameplay() {
     updateTimer();
   }, 1000);
 
-  // 第一批圖案：直接放在距離判定線 3~9 秒可到達的位置
-  // 速度約 55px/秒，所以：3秒=165px, 6秒=330px, 9秒=495px
+  // 第一批：直接放在螢幕內，讓玩家馬上看到
   const spd = DIFFICULTY[state.difficulty].speed;
   spawnTileAt(JUDGE_X + spd * 3);   // 3秒後到判定線
-  spawnTileAt(JUDGE_X + spd * 6);   // 6秒後到判定線
-  spawnTileAt(JUDGE_X + spd * 9);   // 9秒後到判定線
-  scheduleNextSpawn();
+  spawnTileAt(JUDGE_X + spd * 7);   // 7秒後
+  spawnTileAt(JUDGE_X + spd * 11);  // 11秒後
+
+  scheduleNext();
 }
 
-function scheduleNextSpawn() {
+function scheduleNext() {
   if (!state.gameRunning || state.spawnIndex >= state.spawnQueue.length) return;
   const diff = DIFFICULTY[state.difficulty];
-  const jitter = (Math.random() * 300) - 150;
-  state.spawnTimer = setTimeout(() => {
-    spawnTile();
-    scheduleNextSpawn();
-  }, diff.interval + jitter);
+  const jitter = (Math.random()*300)-150;
+  state.spawnTimer = setTimeout(() => { spawnTile(); scheduleNext(); }, diff.interval+jitter);
 }
 
-function spawnTile() { spawnTileAt(TILE_SPAWN_X); }
+function spawnTile() { spawnTileAt(GAME_W + TILE_SIZE); }
 
 function spawnTileAt(startX) {
   if (!state.gameRunning || state.spawnIndex >= state.spawnQueue.length) return;
   const kana = state.spawnQueue[state.spawnIndex++];
 
-  // 防重疊：Y 與已存在圖案距離至少 TILE_SIZE + 30
-  let y, tries = 0;
+  let y, tries=0;
   do {
-    y = TILE_MIN_Y + Math.random() * (TILE_MAX_Y - TILE_MIN_Y);
+    y = TILE_MIN_Y + Math.random()*(TILE_MAX_Y - TILE_MIN_Y);
     tries++;
-    const overlap = state.tiles.some(t => !t.removed && t.x > JUDGE_X && Math.abs(t.y - y) < TILE_SIZE + 80);
-    if (!overlap || tries > 15) break;
-  } while (true);
+    const clash = state.tiles.some(t => !t.removed && Math.abs(t.y-y) < TILE_SIZE+60);
+    if (!clash || tries>15) break;
+  } while(true);
 
   const el = document.createElement('div');
   el.className = 'kana-tile';
   el.style.cssText = `width:${TILE_SIZE}px;height:${TILE_SIZE}px;left:${startX}px;top:${y}px;`;
-
-  const fi = document.createElement('img'); fi.className = 'frame-img'; fi.src = 'images/50onframe.png';
-  const kt = document.createElement('span'); kt.className = 'kana-text'; kt.textContent = kana;
+  const fi = document.createElement('img'); fi.className='frame-img'; fi.src='images/50onframe.png';
+  const kt = document.createElement('span'); kt.className='kana-text'; kt.textContent=kana;
+  kt.style.fontSize = Math.round(TILE_SIZE*0.48)+'px';
   el.appendChild(fi); el.appendChild(kt);
-  document.getElementById('game-screen').appendChild(el);
+  document.getElementById('game-left').appendChild(el);
 
-  state.tiles.push({ el, x: startX, y, kana, judged: false, missTriggered: false, removed: false });
+  state.tiles.push({el, x:startX, y, kana, judged:false, missTriggered:false, removed:false});
+  updateTargetDisplay();
 }
 
 // ============================================================
 // 遊戲迴圈
 // ============================================================
-let lastTime = 0;
+let lastTime=0;
 function gameLoop(ts) {
-  const dt = Math.min((ts - lastTime) / 1000, 0.1);
+  const dt = Math.min((ts-lastTime)/1000, 0.1);
   lastTime = ts;
 
   if (state.gameRunning && state.difficulty) {
-    const { speed, missPixels } = DIFFICULTY[state.difficulty];
+    const {speed, missPixels} = DIFFICULTY[state.difficulty];
     const toRemove = [];
 
     for (const tile of state.tiles) {
       if (tile.removed) continue;
-      tile.x -= speed * dt;
-      tile.el.style.left = tile.x + 'px';
-      const cx = tile.x + TILE_SIZE / 2;
-
+      tile.x -= speed*dt;
+      tile.el.style.left = tile.x+'px';
+      const cx = tile.x + TILE_SIZE/2;
       if (!tile.judged && !tile.missTriggered && cx < JUDGE_X - missPixels) {
         tile.missTriggered = true;
         triggerMiss(tile);
@@ -524,184 +562,141 @@ function gameLoop(ts) {
       if (tile.x + TILE_SIZE < -10) toRemove.push(tile);
     }
     toRemove.forEach(removeTile);
+    updateTargetHighlight();
   }
   requestAnimationFrame(gameLoop);
 }
-requestAnimationFrame(ts => { lastTime = ts; gameLoop(ts); });
+requestAnimationFrame(ts => { lastTime=ts; gameLoop(ts); });
 
 function removeTile(t) {
   if (t.removed) return;
-  t.removed = true; t.el.remove();
-  state.tiles = state.tiles.filter(x => x !== t);
+  t.removed=true; t.el.remove();
+  state.tiles = state.tiles.filter(x=>x!==t);
+  updateTargetDisplay();
 }
 
 // ============================================================
-// 語音辨識：按住聆聽模式
-// 按住 → 持續辨識並即時比對
-// 放開 → 停止辨識
+// 目標圖案（最靠近判定線的未判定圖案）
 // ============================================================
-function initHoldButton() {
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  const btn = document.getElementById('hold-btn');
+function getTarget() {
+  return state.tiles
+    .filter(t => !t.judged && !t.removed && !t.missTriggered && t.x + TILE_SIZE/2 > JUDGE_X - 50)
+    .sort((a,b) => (a.x+TILE_SIZE/2) - (b.x+TILE_SIZE/2))[0] || null;
+}
 
-  if (!SR) {
-    btn.textContent = '⚠️ 音声認識非対応';
-    btn.disabled = true;
+function updateTargetDisplay() {
+  const target = getTarget();
+  const el = document.getElementById('current-target');
+  if (target) {
+    const romaji = ROMAJI[target.kana] || '?';
+    el.textContent = target.kana + '　→　' + romaji;
+  } else {
+    el.textContent = '　';
+  }
+}
+
+function updateTargetHighlight() {
+  const target = getTarget();
+  state.tiles.forEach(t => {
+    if (t.removed) return;
+    t.el.classList.toggle('target', t === target);
+  });
+}
+
+// ============================================================
+// 鍵盤輸入處理
+// ============================================================
+function handleKey(ch) {
+  if (!state.gameRunning) return;
+
+  if (ch === '⌫') {
+    state.inputBuffer = state.inputBuffer.slice(0,-1);
+    document.getElementById('input-buffer').textContent = state.inputBuffer;
     return;
   }
 
-  // 移除舊的事件（防止重複綁定）
-  const newBtn = btn.cloneNode(true);
-  btn.parentNode.replaceChild(newBtn, btn);
-  const b = document.getElementById('hold-btn');
+  state.inputBuffer += ch;
+  document.getElementById('input-buffer').textContent = state.inputBuffer;
 
-  function startListening(e) {
-    e.preventDefault();
-    if (!state.gameRunning || state.isListening) return;
-    state.isListening = true;
-    state.liveTranscripts = [];
-    b.classList.add('on');
-    b.textContent = '🔴 話してください';
-    startRecognition();
-  }
-
-  function stopListening(e) {
-    e.preventDefault();
-    if (!state.isListening) return;
-    state.isListening = false;
-    b.classList.remove('on');
-    b.textContent = '🎤 押して話す';
-    if (state.recognition) {
-      try { state.recognition.abort(); } catch(err) {}
-      state.recognition = null;
-    }
-    document.getElementById('voice-heard').textContent = '';
-  }
-
-  b.addEventListener('touchstart',  startListening, { passive: false });
-  b.addEventListener('touchend',    stopListening,  { passive: false });
-  b.addEventListener('touchcancel', stopListening,  { passive: false });
-  b.addEventListener('mousedown',   startListening);
-  b.addEventListener('mouseup',     stopListening);
-  b.addEventListener('mouseleave',  stopListening);
+  // 嘗試比對目標圖案
+  tryMatch();
 }
 
-function startRecognition() {
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SR || !state.isListening) return;
+function tryMatch() {
+  const target = getTarget();
+  if (!target) { state.inputBuffer=''; document.getElementById('input-buffer').textContent=''; return; }
 
-  const rec = new SR();
-  rec.lang = 'ja-JP';
-  rec.continuous = false;    // 單次：說完就回傳，讓我們立刻重啟
-  rec.interimResults = true; // 中途結果也要，提升即時性
-  rec.maxAlternatives = 10;
-  state.recognition = rec;
+  const buf = state.inputBuffer;
+  const correct = ROMAJI[target.kana];
+  const alts    = ROMAJI_ALT[target.kana] || [correct];
+  const accepted = alts.includes(correct) ? alts : [correct, ...alts];
 
-  rec.onresult = (event) => {
-    const all = [];
-    for (let i = 0; i < event.results.length; i++)
-      for (let j = 0; j < event.results[i].length; j++) {
-        const t = event.results[i][j].transcript.trim();
-        if (t) all.push(t);
-      }
-    if (all.length > 0) {
-      document.getElementById('voice-heard').textContent = all[0];
-      // 即時比對：只要有結果就馬上試判定
-      tryJudge(all);
-    }
-  };
-
-  rec.onerror = (e) => {
-    if (e.error === 'aborted') return;
-    // 出錯就立刻重啟（只要還在按住）
-    if (state.isListening) setTimeout(startRecognition, 100);
-  };
-
-  rec.onend = () => {
-    // 單次結束後，只要還在按住就立刻重啟
-    if (state.isListening) setTimeout(startRecognition, 50);
-    else document.getElementById('voice-heard').textContent = '';
-  };
-
-  try { rec.start(); } catch(e) {
-    if (state.isListening) setTimeout(startRecognition, 200);
+  // 完全匹配 → 判定成功
+  if (accepted.some(r => buf === r)) {
+    state.inputBuffer = '';
+    document.getElementById('input-buffer').textContent = '';
+    target.judged = true;
+    triggerSuccess(target);
+    return;
   }
+
+  // 部分匹配 → 繼續等待輸入
+  const partial = accepted.some(r => r.startsWith(buf));
+  if (partial) return;
+
+  // 完全不匹配 → 清除 buffer，重新從這個字母開始
+  // （給玩家機會，不直接懲罰）
+  state.inputBuffer = ch;
+  document.getElementById('input-buffer').textContent = state.inputBuffer;
+  // 再試一次（可能新字母就是正確開頭）
+  const retry = accepted.some(r => r.startsWith(ch));
+  if (!retry) { state.inputBuffer=''; document.getElementById('input-buffer').textContent=''; }
 }
 
-// ============================================================
-// 語音比對
-// ============================================================
-function tryJudge(transcripts) {
+// 實體鍵盤也支援（電腦端）
+document.addEventListener('keydown', e => {
   if (!state.gameRunning) return;
-
-  // 找判定線附近最近的未判定圖案
-  const candidates = state.tiles
-    .filter(t => !t.judged && !t.removed && !t.missTriggered &&
-                 Math.abs((t.x + TILE_SIZE/2) - JUDGE_X) < JUDGE_RANGE)
-    .sort((a, b) => Math.abs((a.x + TILE_SIZE/2) - JUDGE_X) - Math.abs((b.x + TILE_SIZE/2) - JUDGE_X));
-
-  if (!candidates.length) return;
-
-  for (const tile of candidates) {
-    const kws = KANA_DATA[tile.kana] || [];
-    let hit = false;
-    for (const t of transcripts) {
-      if (kws.some(kw => t.includes(kw))) { hit = true; break; }
-      // を / お 同音
-      if ((tile.kana === 'を' || tile.kana === 'お') &&
-          (t.includes('お') || t.includes('を') || t.includes('o'))) { hit = true; break; }
-    }
-    if (hit) {
-      tile.judged = true;
-      document.getElementById('voice-heard').textContent = '✨ ' + transcripts[0];
-      setTimeout(() => { document.getElementById('voice-heard').textContent = ''; }, 600);
-      triggerSuccess(tile);
-      break;
-    }
-  }
-}
+  if (e.key === 'Backspace') { handleKey('⌫'); return; }
+  if (/^[a-zA-Z]$/.test(e.key)) handleKey(e.key.toLowerCase());
+});
 
 // ============================================================
 // 判定成功 / 失敗
 // ============================================================
 function triggerSuccess(tile) {
-  const cx = tile.x + TILE_SIZE/2, cy = tile.y + TILE_SIZE/2;
-  setCharState('attack');
+  const cx = tile.x+TILE_SIZE/2, cy = tile.y+TILE_SIZE/2;
+  setChar('attack');
   showBeam(cx, cy);
-  showJudge('OK！', cx, cy - 30, 'ok');
+  showJudge('OK！', cx, cy-30, 'ok');
   tile.el.classList.add('success');
-  setTimeout(() => removeTile(tile), 400);
-  setTimeout(() => { if (state.gameRunning) setCharState('stand'); document.getElementById('attack-beam').style.display='none'; }, 500);
+  setTimeout(()=>removeTile(tile), 400);
+  setTimeout(()=>{ if(state.gameRunning) setChar('stand'); document.getElementById('attack-beam').style.display='none'; }, 500);
 }
 
 function triggerMiss(tile) {
   if (!state.gameRunning) return;
   tile.el.classList.add('fail');
-  setTimeout(() => removeTile(tile), 500);
-
-  state.hearts = Math.max(0, state.hearts - 1);
+  setTimeout(()=>removeTile(tile), 500);
+  state.hearts = Math.max(0, state.hearts-1);
   renderHearts();
-
-  setCharState('attacked');
+  setChar('attacked');
   const char = document.getElementById('character');
   char.classList.remove('hit'); void char.offsetWidth; char.classList.add('hit');
-  setTimeout(() => { char.classList.remove('hit'); if (state.gameRunning && state.hearts > 0) setCharState('stand'); }, 1000);
-
-  showJudge('MISS', tile.x + TILE_SIZE/2, tile.y + TILE_SIZE/2, 'miss');
-  if (state.hearts <= 0) setTimeout(triggerGameOver, 600);
+  setTimeout(()=>{ char.classList.remove('hit'); if(state.gameRunning&&state.hearts>0) setChar('stand'); }, 1000);
+  showJudge('MISS', tile.x+TILE_SIZE/2, tile.y+TILE_SIZE/2, 'miss');
+  if (state.hearts<=0) setTimeout(triggerGameOver, 600);
 }
 
 function showBeam(tx, ty) {
   const b = document.getElementById('attack-beam');
-  const sx = CHAR_X + CHAR_W - 10, sy = BASE_H - CHAR_BOTTOM - CHAR_H * 0.55;
-  const dx = tx-sx, dy = ty-sy;
-  const len = Math.sqrt(dx*dx+dy*dy), ang = Math.atan2(dy,dx)*180/Math.PI;
-  b.style.cssText = `left:${sx}px;top:${sy-25}px;width:${len}px;height:50px;transform:rotate(${ang}deg);transform-origin:0 50%;display:block;`;
+  const sx=CHAR_X+CHAR_W-10, sy=GAME_H-CHAR_BOTTOM-CHAR_H*0.55;
+  const dx=tx-sx, dy=ty-sy, len=Math.sqrt(dx*dx+dy*dy), ang=Math.atan2(dy,dx)*180/Math.PI;
+  b.style.cssText=`left:${sx}px;top:${sy-25}px;width:${len}px;height:50px;transform:rotate(${ang}deg);transform-origin:0 50%;display:block;`;
 }
 
-function setCharState(s) {
-  const map = {stand:'frierenstand',attack:'frierenattack',attacked:'frierenattacked',clear:'frierenclear',failed:'frierenfailed'};
-  document.getElementById('char-img').src = `images/${map[s]||'frierenstand'}.png`;
+function setChar(s) {
+  const m={stand:'frierenstand',attack:'frierenattack',attacked:'frierenattacked',clear:'frierenclear',failed:'frierenfailed'};
+  document.getElementById('char-img').src=`images/${m[s]||'frierenstand'}.png`;
 }
 
 // ============================================================
@@ -709,85 +704,57 @@ function setCharState(s) {
 // ============================================================
 function triggerClear() {
   if (!state.gameRunning) return;
-  state.gameRunning = false;
-  stopSpawning(); stopSpeech(); clearInterval(state.gameTimer);
-  setCharState('clear');
+  state.gameRunning=false;
+  stopSpawning(); clearInterval(state.gameTimer);
+  setChar('clear');
   document.getElementById('character').classList.add('clear');
-  const msg = document.getElementById('clear-message');
-  msg.style.opacity = '1'; msg.classList.add('show');
+  document.getElementById('clear-msg-wrap').classList.add('show');
 }
 
 function triggerGameOver() {
   if (!state.gameRunning) return;
-  state.gameRunning = false;
-  stopSpawning(); stopSpeech(); clearInterval(state.gameTimer);
-  setCharState('failed');
-  const msg = document.getElementById('gameover-message');
-  msg.style.opacity = '1'; msg.classList.add('show');
+  state.gameRunning=false;
+  stopSpawning(); clearInterval(state.gameTimer);
+  setChar('failed');
+  document.getElementById('over-msg-wrap').classList.add('show');
 }
 
 // ============================================================
-// HUD
+// HUD / 工具
 // ============================================================
 function renderHearts() {
-  const c = document.getElementById('hearts-container');
-  c.innerHTML = '';
-  for (let i = 0; i < 6; i++) {
-    const h = document.createElement('span');
-    h.className = 'heart' + (i >= state.hearts ? ' lost' : '');
-    h.textContent = '❤'; c.appendChild(h);
-  }
+  const c=document.getElementById('hearts-container'); c.innerHTML='';
+  for(let i=0;i<6;i++){const h=document.createElement('span');h.className='heart'+(i>=state.hearts?' lost':'');h.textContent='❤';c.appendChild(h);}
 }
-
 function updateTimer() {
-  const el = document.getElementById('timer-display');
-  const m = Math.floor(state.timeLeft/60), s = state.timeLeft%60;
-  el.textContent = m + ':' + String(s).padStart(2,'0');
-  el.classList.toggle('urgent', state.timeLeft <= 30);
+  const el=document.getElementById('timer-display');
+  const m=Math.floor(state.timeLeft/60),s=state.timeLeft%60;
+  el.textContent=m+':'+String(s).padStart(2,'0');
+  el.classList.toggle('urgent',state.timeLeft<=30);
 }
-
-function showJudge(text, x, y, type) {
-  const el = document.createElement('div');
-  el.className = 'judge-popup ' + type;
-  el.textContent = text;
-  el.style.cssText = `left:${x-20}px;top:${y-20}px;font-size:26px;`;
-  document.getElementById('game-screen').appendChild(el);
-  setTimeout(() => el.remove(), 800);
+function showJudge(text,x,y,type){
+  const el=document.createElement('div'); el.className='judge-popup '+type; el.textContent=text;
+  el.style.cssText=`left:${x-20}px;top:${y-20}px;font-size:24px;`;
+  document.getElementById('game-left').appendChild(el);
+  setTimeout(()=>el.remove(),800);
+}
+function stopSpawning(){ clearTimeout(state.spawnTimer); }
+function stopGame(){
+  state.gameRunning=false; stopSpawning(); clearInterval(state.gameTimer);
+  state.tiles.forEach(t=>{try{t.el.remove()}catch(e){}});
+  state.tiles=[];
+  document.querySelectorAll('.kana-tile,.judge-popup').forEach(t=>t.remove());
+  document.getElementById('attack-beam').style.display='none';
+  state.inputBuffer=''; document.getElementById('input-buffer').textContent='';
+  document.getElementById('current-target').textContent='　';
+}
+function hideAllOverlays(){
+  ['start-msg-wrap','clear-msg-wrap','over-msg-wrap'].forEach(id=>{document.getElementById(id).classList.remove('show');});
 }
 
 // ============================================================
-// 工具
+// 啟動
 // ============================================================
-function stopSpawning() { clearTimeout(state.spawnTimer); }
-function stopSpeech() {
-  state.isListening = false;
-  if (state.recognition) { try { state.recognition.abort(); } catch(e){} state.recognition = null; }
-  const b = document.getElementById('hold-btn');
-  if (b) { b.classList.remove('on'); b.textContent = '🎤 押して話す'; }
-}
-function stopGame() {
-  state.gameRunning = false;
-  stopSpawning(); stopSpeech(); clearInterval(state.gameTimer);
-  state.tiles.forEach(t => { try { t.el.remove(); } catch(e){} });
-  state.tiles = [];
-  document.querySelectorAll('.kana-tile, .judge-popup').forEach(t => t.remove());
-  document.getElementById('attack-beam').style.display = 'none';
-}
-function hideAllOverlays() {
-  ['start-message','clear-message','gameover-message'].forEach(id => {
-    const el = document.getElementById(id);
-    el.style.opacity = '0'; el.classList.remove('show');
-  });
-}
-
-// CSS for startFadeIn/Out (injected)
-const style = document.createElement('style');
-style.textContent = `
-@keyframes startFadeIn  { from{opacity:0;transform:scale(0.5)} to{opacity:1;transform:scale(1)} }
-@keyframes startFadeOut { from{opacity:1;transform:scale(1)}   to{opacity:0;transform:scale(1.3)} }
-`;
-document.head.appendChild(style);
-
 initTitle();
 </script>
 </body>
