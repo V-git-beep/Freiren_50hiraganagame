@@ -648,21 +648,29 @@ const SFX_FILES = {
   fail:     'audio/fail.mp3',
 };
 
-// 預載所有音效
+// 音效池：每個音效預建 4 個 Audio 物件輪流使用，消除解碼延遲
+const SFX_POOLS = {};
+const POOL_SIZE = 4;
 Object.entries(SFX_FILES).forEach(([key, src]) => {
-  const audio = new Audio(src);
-  audio.preload = 'auto';
-  SFX[key] = audio;
+  SFX_POOLS[key] = { pool: [], idx: 0 };
+  for (let i = 0; i < POOL_SIZE; i++) {
+    const a = new Audio(src);
+    a.preload = 'auto';
+    a.volume = 0.85;
+    // 觸發解碼：靜音播放後立刻暫停，讓瀏覽器提前解碼
+    a.play().then(() => { a.pause(); a.currentTime = 0; }).catch(()=>{});
+    SFX_POOLS[key].pool.push(a);
+  }
 });
 
-// BGM（獨立處理，需要循環）
+// BGM
 const BGM = new Audio('audio/gameentirebgm.mp3');
 BGM.loop = true;
-BGM.volume = 0.5;  // BGM 音量稍低，避免蓋住音效
+BGM.volume = 0.45;
 
 function playBGM() {
   BGM.currentTime = 0;
-  BGM.play().catch(()=>{});  // 部分瀏覽器需要用戶互動後才能播放
+  BGM.play().catch(()=>{});
 }
 
 function stopBGM() {
@@ -671,12 +679,12 @@ function stopBGM() {
 }
 
 function playSFX(key) {
-  const audio = SFX[key];
-  if (!audio) return;
-  // 每次播放都從頭開始（避免快速連續觸發時卡住）
-  const clone = audio.cloneNode();
-  clone.volume = 0.8;
-  clone.play().catch(()=>{});
+  const entry = SFX_POOLS[key];
+  if (!entry) return;
+  const audio = entry.pool[entry.idx % POOL_SIZE];
+  entry.idx++;
+  audio.currentTime = 0;
+  audio.play().catch(()=>{});
 }
 
 let charTimer = null;
