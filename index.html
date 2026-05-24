@@ -73,8 +73,8 @@ body { background:#000; overflow:hidden; width:100vw; height:100vh; font-family:
 .bounce { animation:clearBounce 0.6s ease 2; }
 
 /* 光束 */
-#attack-beam { position:absolute; z-index:25; pointer-events:none; display:none; transform-origin:left center; }
-#attack-beam img { width:100%; height:100%; object-fit:fill; mix-blend-mode:lighten; }
+#attack-beam { position:absolute; z-index:25; pointer-events:none; display:none; transform-origin:left center; background:transparent; }
+#attack-beam img { width:100%; height:100%; object-fit:fill; mix-blend-mode:screen; }
 
 /* 五十音圖案 */
 .kana-tile { position:absolute; z-index:15; display:flex; align-items:center; justify-content:center; pointer-events:none; }
@@ -850,7 +850,7 @@ function showBeam(tx,ty) {
   const b=document.getElementById('attack-beam');
   const sx=CHAR_X+CHAR_W-10, sy=VH-CHAR_BOT-CHAR_H*0.55;
   const dx=tx-sx,dy=ty-sy,len=Math.sqrt(dx*dx+dy*dy),ang=Math.atan2(dy,dx)*180/Math.PI;
-  b.style.cssText=`left:${sx}px;top:${sy-100}px;width:${len}px;height:200px;transform:rotate(${ang}deg);transform-origin:0 50%;display:block;mix-blend-mode:lighten;`;
+  b.style.cssText=`left:${sx}px;top:${sy-100}px;width:${len}px;height:200px;transform:rotate(${ang}deg);transform-origin:0 50%;display:block;background:transparent;`;
 }
 
 function setChar(s) {
