@@ -459,7 +459,8 @@ function startGame(diffKey) {
 }
 
 function buildQueue(dk) {
-  const k=DIFFICULTY[dk].kana, total=DIFFICULTY[dk].totalTiles, q=[];
+  // 預先生成200個（遠超2分鐘所需），足夠整局不斷流
+  const k=DIFFICULTY[dk].kana, total=200, q=[];
   while(q.length<total) q.push(...[...k].sort(()=>Math.random()-0.5));
   return q.slice(0,total);
 }
@@ -494,14 +495,20 @@ function beginGame() {
 }
 
 function schedNext() {
-  if(!G.running || G.qIdx>=G.queue.length) return;
+  if(!G.running) return;
+  // 如果 queue 快用完，動態補充
+  if(G.qIdx >= G.queue.length - 10) {
+    const k=DIFFICULTY[G.diff].kana;
+    const extra=[...k].sort(()=>Math.random()-0.5);
+    G.queue.push(...extra);
+  }
   const d=DIFFICULTY[G.diff];
   const jitter=(Math.random()*300)-150;
   G.spawnTimer=setTimeout(()=>{ spawnAt(LW+TS); schedNext(); }, d.interval+jitter);
 }
 
 function spawnAt(startX) {
-  if(!G.running || G.qIdx>=G.queue.length) return;
+  if(!G.running) return;
   const kana=G.queue[G.qIdx++];
   let y, tries=0;
   do {
@@ -622,8 +629,12 @@ function triggerSuccess(t) {
   setChar('attack'); showBeam(cx,cy);
   showJudge('OK！',cx,cy-30,'ok');
   t.el.classList.add('success');
-  setTimeout(()=>rmTile(t),400);
-  setTimeout(()=>{ if(G.running) setChar('stand'); document.getElementById('attack-beam').style.display='none'; },500);
+  // 圖案消失後（400ms）才切回待機，光束也同時消失
+  setTimeout(()=>{
+    rmTile(t);
+    if(G.running) setChar('stand');
+    document.getElementById('attack-beam').style.display='none';
+  },420);
 }
 
 function triggerMiss(t) {
@@ -644,7 +655,7 @@ function showBeam(tx,ty) {
   const b=document.getElementById('attack-beam');
   const sx=CHAR_X+CHAR_W-10, sy=VH-CHAR_BOT-CHAR_H*0.55;
   const dx=tx-sx,dy=ty-sy,len=Math.sqrt(dx*dx+dy*dy),ang=Math.atan2(dy,dx)*180/Math.PI;
-  b.style.cssText=`left:${sx}px;top:${sy-25}px;width:${len}px;height:50px;transform:rotate(${ang}deg);transform-origin:0 50%;display:block;`;
+  b.style.cssText=`left:${sx}px;top:${sy-37}px;width:${len}px;height:75px;transform:rotate(${ang}deg);transform-origin:0 50%;display:block;`;
 }
 
 function setChar(s) {
@@ -657,16 +668,25 @@ function setChar(s) {
 // ============================================================
 function triggerClear() {
   if(!G.running) return;
-  G.running=false; stopGame(); 
+  G.running=false;
+  clearInterval(G.gameTimer);
+  clearTimeout(G.spawnTimer);
+  // 角色圖與結果字樣同時出現
   setChar('clear');
   document.getElementById('character').classList.add('clear');
   document.getElementById('clear-wrap').classList.add('show');
+  // 停止新圖案生成，但不立刻清除現有圖案（讓玩家看到最後狀態）
+  G.tiles.forEach(t=>{ t.judged=true; }); // 防止再觸發MISS
 }
 function triggerGameOver() {
   if(!G.running) return;
-  G.running=false; stopGame();
+  G.running=false;
+  clearInterval(G.gameTimer);
+  clearTimeout(G.spawnTimer);
+  // 角色圖與結果字樣同時出現
   setChar('failed');
   document.getElementById('over-wrap').classList.add('show');
+  G.tiles.forEach(t=>{ t.judged=true; }); // 防止繼續扣血
 }
 
 // ============================================================
