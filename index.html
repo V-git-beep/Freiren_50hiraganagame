@@ -438,6 +438,7 @@ function showGame() {
 }
 function goTitle() {
   stopGame();
+  stopBGM();
   hideAllOverlays();
   showTitle();
   G.phase='title';
@@ -458,6 +459,7 @@ function startGame(diffKey) {
   renderHearts(); updateTimer();
   showChar('stand');
   showGame();
+  playBGM();
   showStartMsg();
 }
 
@@ -635,6 +637,48 @@ const CHAR_IMGS = {};
   CHAR_IMGS[name] = img;
 });
 
+// ============================================================
+// 音效系統
+// ============================================================
+const SFX = {};
+const SFX_FILES = {
+  attack:   'audio/attack.mp3',
+  attacked: 'audio/attacked.mp3',
+  clear:    'audio/clear.mp3',
+  fail:     'audio/fail.mp3',
+};
+
+// 預載所有音效
+Object.entries(SFX_FILES).forEach(([key, src]) => {
+  const audio = new Audio(src);
+  audio.preload = 'auto';
+  SFX[key] = audio;
+});
+
+// BGM（獨立處理，需要循環）
+const BGM = new Audio('audio/gameentirebgm.mp3');
+BGM.loop = true;
+BGM.volume = 0.5;  // BGM 音量稍低，避免蓋住音效
+
+function playBGM() {
+  BGM.currentTime = 0;
+  BGM.play().catch(()=>{});  // 部分瀏覽器需要用戶互動後才能播放
+}
+
+function stopBGM() {
+  BGM.pause();
+  BGM.currentTime = 0;
+}
+
+function playSFX(key) {
+  const audio = SFX[key];
+  if (!audio) return;
+  // 每次播放都從頭開始（避免快速連續觸發時卡住）
+  const clone = audio.cloneNode();
+  clone.volume = 0.8;
+  clone.play().catch(()=>{});
+}
+
 let charTimer = null;
 
 function showChar(state) {
@@ -659,6 +703,7 @@ function triggerSuccess(t) {
   // 攻擊圖 + 光束，500ms 後回待機
   setCharFor('attack', 500);
   showBeam(cx, cy);
+  playSFX('attack');
   showJudge('OK！', cx, cy-30, 'ok');
   t.el.classList.add('success');
 
@@ -678,6 +723,7 @@ function triggerMiss(t) {
 
   // 受擊圖 800ms 後回待機，同時閃爍動畫
   setCharFor('attacked', 800);
+  playSFX('attacked');
   const char = document.getElementById('character');
   char.classList.remove('hit');
   void char.offsetWidth;
@@ -709,6 +755,8 @@ function triggerClear() {
   clearInterval(G.gameTimer);
   clearTimeout(G.spawnTimer);
   clearTimeout(charTimer);
+  stopBGM();
+  playSFX('clear');
   setChar('clear');
   document.getElementById('character').classList.add('clear');
   document.getElementById('clear-wrap').classList.add('show');
@@ -720,6 +768,8 @@ function triggerGameOver() {
   clearInterval(G.gameTimer);
   clearTimeout(G.spawnTimer);
   clearTimeout(charTimer);
+  stopBGM();
+  playSFX('fail');
   setChar('failed');
   document.getElementById('over-wrap').classList.add('show');
   G.tiles.forEach(t=>{ t.judged=true; });
