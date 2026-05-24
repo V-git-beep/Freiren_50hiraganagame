@@ -1,0 +1,12 @@
+{
+  "name": "frieren-kana-battle",
+  "version": "1.0.0",
+  "description": "芙莉蓮の五十音バトル - 語音辨識彈幕遊戲",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
