@@ -228,7 +228,7 @@ const KANA_DATA = {
   'き': ['き','キ','ki','木','気','機','企','基','記','期'],
   'く': ['く','ク','ku','九','苦','句','区','駆','口'],
   'け': ['け','ケ','ke','毛','家','消','怪','欠','決','計'],
-  'こ': ['こ','コ','ko','子','古','故','語','弧','個'],
+  'こ': ['こ','コ','ko','子','古','故','語','弧','個','顔','声','濃'],
   'さ': ['さ','サ','sa','差','砂','左','作','早','沙'],
   'し': ['し','シ','si','shi','死','詞','師','思','詩','止','紙','市','糸'],
   'す': ['す','ス','su','素','数','酢','州','巣','好き','過ぎ'],
@@ -274,26 +274,31 @@ const DIFFICULTY = {
     label: '初級 I',
     kana: ['あ','い','う','え','お','か','き','く','け','こ','さ','し','す','せ','そ','た','ち','つ','て','と'],
     totalTiles: 40,
-    speed: 90,       // px/秒
-    interval: 2800,  // ms 圖案生成間隔
-    // 判定窗口（像素）：圖案中心在判定線左右這個範圍內都算「在線上」
-    judgePixels: 80, // 判定線左右各 80px = 共 160px 的寬容範圍
+    speed: 60,        // px/秒（放慢，讓玩家有更多反應時間）
+    interval: 3200,   // ms 圖案生成間隔
+    // missPixels：圖案中心超過判定線左方這個距離才算MISS
+    // 設大一點，補償語音辨識1~2秒延遲
+    missPixels: 250,
+    // judgePixels：語音比對時，圖案中心距判定線的最大接受距離
+    judgePixels: 400,
   },
   beginner2: {
     label: '初級 II',
     kana: ['な','に','ぬ','ね','の','は','ひ','ふ','へ','ほ','ま','み','む','め','も','や','ゆ','よ','ら','り','る','れ','ろ','わ','を'],
     totalTiles: 40,
-    speed: 100,
-    interval: 2800,
-    judgePixels: 80,
+    speed: 65,
+    interval: 3200,
+    missPixels: 250,
+    judgePixels: 400,
   },
   advanced: {
     label: '進階',
     kana: ['あ','い','う','え','お','か','き','く','け','こ','さ','し','す','せ','そ','た','ち','つ','て','と','な','に','ぬ','ね','の','は','ひ','ふ','へ','ほ','ま','み','む','め','も','や','ゆ','よ','ら','り','る','れ','ろ','わ','を'],
     totalTiles: 40,
-    speed: 120,
-    interval: 2300,
-    judgePixels: 60,
+    speed: 80,
+    interval: 2800,
+    missPixels: 200,
+    judgePixels: 350,
   }
 };
 
@@ -536,8 +541,9 @@ function gameLoop(ts) {
 
       const cx = tile.x + TILE_SIZE / 2; // 圖案中心 X
 
-      // 判定失敗：圖案中心飛過判定線左方 judgePixels 像素後 → MISS
-      if (!tile.judged && !tile.missTriggered && cx < JUDGE_X - judgePixels) {
+      // 判定失敗：圖案中心飛過判定線左方 missPixels 像素後 → MISS
+      const missPixels = DIFFICULTY[state.difficulty].missPixels;
+      if (!tile.judged && !tile.missTriggered && cx < JUDGE_X - missPixels) {
         tile.missTriggered = true;
         triggerMiss(tile);
       }
@@ -622,16 +628,15 @@ function restartSpeech() {
 function handleVoiceInput(transcripts) {
   if (!state.gameRunning) return;
 
-  const judgePixels = DIFFICULTY[state.difficulty].judgePixels;
+  const jp = DIFFICULTY[state.difficulty].judgePixels;
 
   // 找出所有在判定窗口內（未判定）的圖案，按距離判定線排序
   const candidates = state.tiles
     .filter(tile => {
       if (tile.judged || tile.removed || tile.missTriggered) return false;
       const cx = tile.x + TILE_SIZE / 2;
-      // 圖案中心在判定線的 (judgePixels * 3) 範圍內都接受
-      // 乘3是因為語音辨識有延遲，圖案可能已飄過一點
-      return Math.abs(cx - JUDGE_X) < judgePixels * 3;
+      // 圖案中心在判定線的 judgePixels 範圍內都接受
+      return Math.abs(cx - JUDGE_X) < jp;
     })
     .sort((a, b) => {
       // 優先選最靠近判定線的圖案
