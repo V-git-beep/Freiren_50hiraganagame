@@ -233,9 +233,9 @@ body { background:#000; overflow:hidden; width:100vw; height:100vh; font-family:
       <div id="game-left">
         <div id="judge-line"></div>
         <div id="character">
-        <img id="char-img" src="images/frierenstand.png" alt="">
+        <img id="char-img" src="images/frierenstand.webp" alt="">
       </div>
-        <div id="attack-beam"><img src="images/attackeffect.png" alt=""></div>
+        <div id="attack-beam"><img src="images/attackeffect.webp" alt=""></div>
         <div id="hud">
           <div id="hearts-container"></div>
           <div id="timer-display">2:00</div>
@@ -445,15 +445,15 @@ function flashKey(btn) {
 // ============================================================
 // 載入畫面只等圖片和短音效，BGM 在背景自己下載不阻擋
 const ALL_ASSETS = [
-  'images/gamebeginingbackground.png',
-  'images/gamebeginbackground.png',
-  'images/frierenstand.png',
-  'images/frierenattack.png',
-  'images/frierenattacked.png',
-  'images/frierenclear.png',
-  'images/frierenfailed.png',
-  'images/attackeffect.png',
-  'images/50onframe.png',
+  'images/gamebeginingbackground.webp',
+  'images/gamebeginbackground.webp',
+  'images/frierenstand.webp',
+  'images/frierenattack.webp',
+  'images/frierenattacked.webp',
+  'images/frierenclear.webp',
+  'images/frierenfailed.webp',
+  'images/attackeffect.webp',
+  'images/50onframe.webp',
   'audio/attack.mp3',
   'audio/attacked.mp3',
   'audio/clear.mp3',
@@ -503,8 +503,8 @@ function preloadAll(onComplete) {
 // 初始化
 // ============================================================
 function init() {
-  document.getElementById('title-screen').style.backgroundImage = "url('images/gamebeginingbackground.png')";
-  document.getElementById('game-left').style.backgroundImage    = "url('images/gamebeginbackground.png')";
+  document.getElementById('title-screen').style.backgroundImage = "url('images/gamebeginingbackground.webp')";
+  document.getElementById('game-left').style.backgroundImage    = "url('images/gamebeginbackground.webp')";
 
   // 按鈕
   const g=document.getElementById('btn-group'); g.innerHTML='';
@@ -628,7 +628,7 @@ function spawnAt(startX) {
   const el=document.createElement('div');
   el.className='kana-tile';
   el.style.cssText=`width:${TS}px;height:${TS}px;left:${startX}px;top:${y}px;`;
-  const fi=document.createElement('img'); fi.className='frame-img'; fi.src='images/50onframe.png';
+  const fi=document.createElement('img'); fi.className='frame-img'; fi.src='images/50onframe.webp';
   const kt=document.createElement('span'); kt.className='kana-text'; kt.textContent=kana;
   kt.style.fontSize=Math.round(TS*0.47)+'px';
   el.appendChild(fi); el.appendChild(kt);
