@@ -54,7 +54,7 @@ body { background:#000; overflow:hidden; width:100vw; height:100vh; font-family:
 #game-screen.active { display:flex; }
 
 /* 左：遊戲主區 */
-#game-left { position:relative; overflow:hidden; flex-shrink:0; background-size:cover; background-position:center; }
+#game-left { position:relative; overflow:hidden; flex-shrink:0; background-size:cover; background-position:center; cursor:default; }
 
 /* 判定線 */
 #judge-line {
@@ -565,11 +565,15 @@ function init() {
 // 畫面切換
 // ============================================================
 function showTitle() {
-  document.getElementById('title-screen').classList.add('active');
+  const ts = document.getElementById('title-screen');
+  ts.classList.add('active');
+  ts.style.pointerEvents = 'auto';
   document.getElementById('game-screen').classList.remove('active');
 }
 function showGame() {
-  document.getElementById('title-screen').classList.remove('active');
+  const ts = document.getElementById('title-screen');
+  ts.classList.remove('active');
+  ts.style.pointerEvents = 'none'; // 遊戲進行中標題畫面完全不可點
   document.getElementById('game-screen').classList.add('active');
 }
 function goTitle() {
@@ -762,6 +766,33 @@ document.addEventListener('keydown',e=>{
   if(!G.running) return;
   if(e.key==='Backspace') { e.preventDefault(); onKey('⌫'); return; }
   if(/^[a-zA-Z]$/.test(e.key)) onKey(e.key.toLowerCase());
+});
+
+// 切換分頁時暫停遊戲迴圈，避免圖案位置錯亂堆積
+document.addEventListener('visibilitychange', () => {
+  if (!G.running) return;
+  if (document.hidden) {
+    // 分頁切走：暫停計時器和生成
+    clearInterval(G.gameTimer);
+    clearTimeout(G.spawnTimer);
+    G._paused = true;
+    G._pausedAt = Date.now();
+  } else {
+    // 分頁切回：重新計算時間並繼續
+    if (!G._paused) return;
+    G._paused = false;
+    const elapsed = Math.floor((Date.now() - G._pausedAt) / 1000);
+    // 重設迴圈時間基準，避免 dt 暴增
+    lastT = performance.now();
+    // 繼續計時器
+    G.gameTimer = setInterval(() => {
+      if (!G.running) return;
+      if (--G.timeLeft <= 0) triggerClear();
+      updateTimer();
+    }, 1000);
+    // 繼續生成
+    schedNext();
+  }
 });
 
 // ============================================================
